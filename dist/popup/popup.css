@@ -1,0 +1,53 @@
+
+.container {
+  position: relative;
+  background: #fff;
+  overflow: hidden;
+  width: 700px;
+  height: 600px;
+}
+.md-layout-item { position: relative;
+}
+.inner-container { padding: 20px;
+}
+.md-table-cell-container,
+.md-table-head-label { padding: 0 5px;
+}
+.md-checkbox { margin: 0;
+}
+.datepicker-label {
+  position: absolute;
+  left: 44px;
+  font-size: 12px;
+}
+.md-table-head-container {
+  padding: 4px 0;
+  height: auto;
+  text-align: left;
+}
+.md-table-row:hover:not(.md-header-row) .md-table-cell { background: unset !important;
+}
+.no-wrap { white-space: nowrap;
+}
+.button__container {
+  display: flex;
+  justify-content: flex-end;
+}
+.md-button { margin-left: 0;
+}
+.error-message {
+  text-align: center;
+  font-size: 16px;
+  position: absolute;
+    bottom: 0;
+}
+.md-field.md-focused .md-input,
+.md-field.md-focused .md-textarea,
+.md-field.md-has-value .md-input,
+.md-field.md-has-value .md-textarea { font-size: 14px;
+}
+.custom-checkbox { margin-top: 4px;
+}
+img { width: 32px;
+}
+
