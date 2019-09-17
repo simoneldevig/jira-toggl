@@ -151,6 +151,7 @@
             _self.showSnackbar = true;
             _self.checkIfAlreadyLogged(log);
             _self.checkedLogs = [];
+            _self.syncAllLogs = false;
           })
           .catch(function (error) {
             _self.errorMessage = error;
