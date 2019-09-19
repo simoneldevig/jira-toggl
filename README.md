@@ -4,7 +4,15 @@
 
 A web extension for syncing Toggl timelog entries to your Jira Software worklog.
 
-##Download
+## How it looks
+
+### Popup
+![Popup](jira-toggl-popup.png)
+
+### Settings
+![Popup](jira-toggl-settings.png)
+
+## Download
 Link to Chrome store
 
 ## Contributing To This Project
