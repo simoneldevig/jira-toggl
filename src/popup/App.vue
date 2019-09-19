@@ -21,11 +21,11 @@
       <div class="md-layout md-gutter">
         <div class="md-layout-item">
           <span class="datepicker-label md-caption">Start date</span>
-          <md-datepicker v-on:md-closed="reInit" v-model="startDate" md-immediately />
+          <md-datepicker v-model="startDate" md-immediately />
         </div>
         <div class="md-layout-item">
           <span class="datepicker-label md-caption">End date</span>
-          <md-datepicker v-on:md-closed="reInit" v-model="endDate" md-immediately />
+          <md-datepicker v-model="endDate" md-immediately />
         </div>
       </div>
       <div class="md-layout">
@@ -132,12 +132,23 @@
         return totalDuration;
       }
     },
-    methods: {
-      reInit () {
-        this.checkedLogs = [];
-        this.logs = [];
-        this.fetchEntries();
+    watch : {
+      startDate:function(newVal, oldVal) {
+        if (newVal.toString() !== oldVal.toString()) {
+          this.checkedLogs = [];
+          this.logs = [];
+          this.fetchEntries();
+        }
       },
+      endDate:function(newVal, oldVal) {
+        if (newVal.toString() !== oldVal.toString()) {
+          this.checkedLogs = [];
+          this.logs = [];
+          this.fetchEntries();
+        }
+      }
+    },
+    methods: {
       syncToJira () {
         const _self = this;
         this.checkedLogs.forEach(function (log) {
@@ -203,10 +214,10 @@
           .then(function (response) {
             let worklogs = response.data.worklogs;
             worklogs.forEach(function (worklog) {
-              let diff = Math.floor(worklog.timeSpentSeconds / 60) - Math.floor(log.duration / 60);
-              if (_self.$moment(worklog.started).format() === _self.$moment(log.start).format() && diff < 4 && diff > -4 && worklog.author.name === _self.jiraUsername) {
+              console.log(_self.$moment(worklog.started).format("DD/MM/YYYY"), _self.$moment(log.start).format("DD/MM/YYYY"))
+              if (_self.$moment(worklog.started).format("DD/MM/YYYY") === _self.$moment(log.start).format("DD/MM/YYYY") && worklog.author.name === _self.jiraUsername) {
                 let logIndex = _self.logs.findIndex(i => i.id === log.id);
-                if (typeof(_self.logs[logIndex] !== 'undefined')) {
+                if (typeof (_self.logs[logIndex]) !== 'undefined') {
                   _self.logs[logIndex].isSynced = true;
               }
             }
@@ -215,8 +226,8 @@
       },
       fetchEntries() {
         let _self = this;
-        let startDate = this.$moment(this.startDate).toISOString(true).replace('+02:00', 'Z');
-        let endDate = this.$moment(this.endDate).toISOString(true).replace('+02:00', 'Z');
+        let startDate = this.$moment(this.startDate).utc(true).toISOString(true).replace('+00:00', 'Z');
+        let endDate = this.$moment(this.endDate).utc(true).toISOString(true).replace('+00:00', 'Z');
         let dateQuery = '?start_date=' + startDate + '&end_date=' + endDate;
         axios.get('https://www.toggl.com/api/v8/time_entries', {
             params: {
