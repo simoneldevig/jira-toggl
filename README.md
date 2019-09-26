@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/simoneldevig/jira-toggl.svg?branch=master)](https://travis-ci.org/simoneldevig/jira-toggl)
+
 <img src="src/icons/jira-toggl_128.png" alt="HeadRest" width="128"/>
 
 # Jira Toggl
