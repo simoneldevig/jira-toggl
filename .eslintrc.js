@@ -13,7 +13,7 @@ module.exports = {
   extends: [
     // https://github.com/vuejs/eslint-plugin-vue#priority-a-essential-error-prevention
     // consider switching to `plugin:vue/strongly-recommended` or `plugin:vue/recommended` for stricter rules.
-    'plugin:vue/essential',
+    'plugin:vue/recommended',
     // https://github.com/standard/standard/blob/master/docs/RULES-en.md
     'standard'  ],
   // required to lint *.vue files
@@ -25,6 +25,11 @@ module.exports = {
     // allow async-await
     'generator-star-spacing': 'off',
     // allow debugger during development
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    "indent": ["error", 2, { "SwitchCase": 1 }],
+    "padded-blocks": "off",
+    "semi": ["error", "always"],
+    "vue/max-attributes-per-line": "off",
+    "vue/singleline-html-element-content-newline": "off"
   }
 }
