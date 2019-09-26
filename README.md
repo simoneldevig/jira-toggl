@@ -13,7 +13,7 @@ A web extension for syncing Toggl timelog entries to your Jira Software worklog.
 ![Popup](jira-toggl-settings.png)
 
 ## Download
-Link to Chrome store
+Link to Chrome store: https://tinyurl.com/y4pj9por
 
 ## Contributing To This Project
 
