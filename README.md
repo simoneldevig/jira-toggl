@@ -22,7 +22,7 @@ Link to Chrome store: https://tinyurl.com/y4pj9por
 Anyone and everyone is welcome to contribute. Just create a PR with your changes and I will have a look at it.
 
 ## Building the extension
-Barrowed from the [vue-web-extension](https://github.com/Kocal/vue-web-extension/edit/master/README.md) that this project is based on
+Bowered from the [vue-web-extension](https://github.com/Kocal/vue-web-extension/edit/master/README.md) that this project is based on
 
 ### `npm run build`
 
