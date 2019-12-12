@@ -2,7 +2,6 @@
 .container {
   position: relative;
   background: #fff;
-  overflow: hidden;
   width: 700px;
   height: 600px;
 }

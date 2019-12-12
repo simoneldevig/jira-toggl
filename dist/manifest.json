@@ -1,15 +1,10 @@
 {
   "name": "Jira Toggl",
   "description": "A web extension for syncing Toggl timelog entries to your Jira Software worklog",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "permissions": [
-    "storage",
-    "tabs",
-    "webRequest",
-    "webRequestBlocking",
-    "<all_urls>",
-    "https://toggl.com/*/*",
-    "https://atlassian.net/*/*"
+    "https://*/",
+    "storage"
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "manifest_version": 2,

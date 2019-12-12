@@ -76,7 +76,7 @@
           <span>Log work</span>
         </md-button>
       </div>
-      <md-snackbar :md-active.sync="showSnackbar" md-persistent>
+      <md-snackbar v-if="!errorMessage" :md-active.sync="showSnackbar" md-persistent>
         <span>Yay! Your entries has been logged to Jira✌️</span>
       </md-snackbar>
     </div>
@@ -88,19 +88,24 @@
 
 <script>
 import axios from 'axios';
+import moment from 'moment';
+
+const initalStartDate = new Date(moment().startOf('day'));
+const initalEndDate = new Date(moment().add(1, 'days').endOf('day'));
 
 export default {
   data () {
     return {
       checkedLogs: [],
       syncAllLogs: false,
-      startDate: '',
-      endDate: '',
+      startDate: initalStartDate,
+      endDate: initalEndDate,
       logs: [],
       errorMessage: null,
       jiraUrl: '',
       jiraUsername: '',
       jiraMerge: true,
+      togglApiToken: '',
       isSaving: false,
       showSnackbar: false
     };
@@ -136,16 +141,14 @@ export default {
     chrome.storage.sync.get({
       jiraUrl: '',
       jiraUsername: '',
-      jiraMerge: true
+      jiraMerge: true,
+      togglApiToken: ''
     }, function (setting) {
       _self.jiraUrl = setting.jiraUrl;
       _self.jiraUsername = setting.jiraUsername;
       _self.jiraMerge = setting.jiraMerge;
+      _self.togglApiToken = setting.togglApiToken;
     });
-
-    this.startDate = new Date(this.$moment().startOf('day'));
-    this.endDate = new Date(this.$moment().add(1, 'days').endOf('day'));
-    this.fetchEntries();
   },
   methods: {
     syncToJira () {
@@ -224,10 +227,11 @@ export default {
     },
     fetchEntries () {
       let _self = this;
-      let startDate = this.$moment(this.startDate).utc(true).toISOString(true).replace('+00:00', 'Z');
-      let endDate = this.$moment(this.endDate).utc(true).toISOString(true).replace('+00:00', 'Z');
+      let startDate = moment(this.startDate).utc(true).toISOString(true).replace('+00:00', 'Z');
+      let endDate = moment(this.endDate).utc(true).toISOString(true).replace('+00:00', 'Z');
 
       axios.get('https://www.toggl.com/api/v8/time_entries', {
+        headers: { Authorization: 'Basic ' + window.btoa(_self.togglApiToken + ':api_token') },
         params: {
           start_date: startDate,
           end_date: endDate
@@ -237,7 +241,9 @@ export default {
           entries.data.reverse();
           entries.data.forEach(function (log, index) {
             if ((typeof log.pid !== 'undefined')) {
-              axios.get('https://www.toggl.com/api/v8/projects/' + log.pid)
+              axios.get('https://www.toggl.com/api/v8/projects/' + log.pid, {
+                headers: { Authorization: 'Basic ' + window.btoa(_self.togglApiToken + ':api_token') }
+              })
                 .then(function (issue) {
                   let logObject = log;
                   logObject.isSynced = false;
@@ -267,7 +273,7 @@ export default {
         })
         .catch(function (error) {
           if (typeof (error.response) !== 'undefined' && error.response.status === 403) {
-            _self.errorMessage = 'Please login to Toggl';
+            _self.errorMessage = 'Please add your Toggl API token';
           } else {
             _self.errorMessage = typeof (error.response) !== 'undefined' ? error.response.statusText : error.response;
           }
@@ -281,7 +287,6 @@ export default {
   .container {
     position: relative;
     background: #fff;
-    overflow: hidden;
     width: 700px;
     height: 600px;
   }

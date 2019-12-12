@@ -22,6 +22,10 @@
             <md-input v-model="jiraUsername" />
           </md-field>
           <md-checkbox v-model="jiraMerge">Merge time entries with same comment</md-checkbox>
+          <md-field>
+            <label>Toggl API token</label>
+            <md-input v-model="togglApiToken" />
+          </md-field>
           <div class="button__container">
             <md-button class="md-raised md-accent" @click="saveSettings">
               <span v-show="!isSaving">Save settings</span>
@@ -45,6 +49,7 @@ export default {
       jiraUrl: '',
       jiraUsername: '',
       jiraMerge: true,
+      togglApiToken: '',
       isSaving: false,
       showSnackbar: false
     };
@@ -55,11 +60,13 @@ export default {
     chrome.storage.sync.get({
       jiraUrl: '',
       jiraUsername: '',
-      jiraMerge: true
+      jiraMerge: true,
+      togglApiToken: ''
     }, function (setting) {
       _self.jiraUrl = setting.jiraUrl;
       _self.jiraUsername = setting.jiraUsername;
       _self.jiraMerge = setting.jiraMerge;
+      _self.togglApiToken = setting.togglApiToken;
     });
   },
   methods: {
@@ -70,7 +77,8 @@ export default {
       chrome.storage.sync.set({
         jiraUrl: _self.jiraUrl,
         jiraUsername: _self.jiraUsername,
-        jiraMerge: _self.jiraMerge
+        jiraMerge: _self.jiraMerge,
+        togglApiToken: _self.togglApiToken
       }, function () {
         _self.isSaving = false;
         _self.showSnackbar = true;
