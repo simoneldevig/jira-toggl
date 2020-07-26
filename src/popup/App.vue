@@ -105,6 +105,7 @@ export default {
       jiraUrl: '',
       jiraUsername: '',
       jiraMerge: true,
+      jiraIssueInDescription: false,
       togglApiToken: '',
       isSaving: false,
       showSnackbar: false
@@ -142,11 +143,13 @@ export default {
       jiraUrl: '',
       jiraUsername: '',
       jiraMerge: true,
+      jiraIssueInDescription: false,
       togglApiToken: ''
     }, function (setting) {
       _self.jiraUrl = setting.jiraUrl;
       _self.jiraUsername = setting.jiraUsername;
       _self.jiraMerge = setting.jiraMerge;
+      _self.jiraIssueInDescription = setting.jiraIssueInDescription;
       _self.togglApiToken = setting.togglApiToken;
     });
   },
@@ -225,6 +228,25 @@ export default {
           });
         });
     },
+    getIssue (log) {
+      let _self = this;
+      if (_self.jiraIssueInDescription) {
+        const parsedIssue = log.description.match(/^[A-Z]*-[0-9]*/);
+        if (parsedIssue) {
+          return Promise.resolve(parsedIssue[0]);
+        }
+        return Promise.resolve(null);
+      }
+      if ((typeof log.pid !== 'undefined')) {
+        return axios.get('https://www.toggl.com/api/v8/projects/' + log.pid, {
+          headers: { Authorization: 'Basic ' + window.btoa(_self.togglApiToken + ':api_token') }
+        })
+          .then(function (issue) {
+            return issue.data.data.name;
+          });
+      }
+      Promise.resolve(null);
+    },
     fetchEntries () {
       let _self = this;
       let startDate = moment(this.startDate).utc(true).toISOString(true).replace('+00:00', 'Z');
@@ -239,36 +261,33 @@ export default {
       })
         .then(function (entries) {
           entries.data.reverse();
-          entries.data.forEach(function (log, index) {
-            if ((typeof log.pid !== 'undefined')) {
-              axios.get('https://www.toggl.com/api/v8/projects/' + log.pid, {
-                headers: { Authorization: 'Basic ' + window.btoa(_self.togglApiToken + ':api_token') }
-              })
-                .then(function (issue) {
-                  let logObject = log;
-                  logObject.isSynced = false;
-                  logObject.issue = issue.data.data.name;
-                  logObject.checked = '';
-
-                  if (_self.jiraMerge) {
-                    let logIndex = _self.logs.findIndex(i => i.description === log.description);
-                    if (logIndex !== -1) {
-                      _self.logs[logIndex].duration = _self.logs[logIndex].duration + logObject.duration;
-                    } else {
-                      _self.logs.push(logObject);
-                    }
-                  } else {
-                    _self.logs.push(logObject);
-                  }
-                  _self.checkIfAlreadyLogged(log);
-                });
-            } else {
+          entries.data.forEach(function (log) {
+            _self.getIssue(log).then(function (issueName) {
+              if (!issueName) {
+                let logObject = log;
+                logObject.isSynced = false;
+                logObject.issue = 'NO ID';
+                logObject.checked = '';
+                _self.logs.push(logObject);
+                return;
+              }
               let logObject = log;
               logObject.isSynced = false;
-              logObject.issue = 'NO ID';
+              logObject.issue = issueName;
               logObject.checked = '';
-              _self.logs.push(logObject);
-            }
+
+              if (_self.jiraMerge) {
+                let logIndex = _self.logs.findIndex(i => i.description === log.description);
+                if (logIndex !== -1) {
+                  _self.logs[logIndex].duration = _self.logs[logIndex].duration + logObject.duration;
+                } else {
+                  _self.logs.push(logObject);
+                }
+              } else {
+                _self.logs.push(logObject);
+              }
+              _self.checkIfAlreadyLogged(log);
+            });
           });
         })
         .catch(function (error) {
