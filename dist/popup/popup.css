@@ -7,7 +7,9 @@
 }
 .md-layout-item { position: relative;
 }
-.inner-container { padding: 20px;
+.inner-container {
+  padding: 20px;
+  background: #fff;
 }
 .md-table-cell-container,
 .md-table-head-label { padding: 0 5px;

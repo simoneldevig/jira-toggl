@@ -18,8 +18,8 @@
             <md-input v-model="jiraUrl" />
           </md-field>
           <md-field>
-            <label>Jira username</label>
-            <md-input v-model="jiraUsername" />
+            <label>Jira email</label>
+            <md-input v-model="jiraEmail" />
           </md-field>
           <md-checkbox v-model="jiraMerge">Merge time entries with same comment</md-checkbox>
           <md-field>
@@ -47,7 +47,7 @@ export default {
   data () {
     return {
       jiraUrl: '',
-      jiraUsername: '',
+      jiraEmail: '',
       jiraMerge: true,
       togglApiToken: '',
       isSaving: false,
@@ -59,12 +59,12 @@ export default {
 
     chrome.storage.sync.get({
       jiraUrl: '',
-      jiraUsername: '',
+      jiraEmail: '',
       jiraMerge: true,
       togglApiToken: ''
     }, function (setting) {
       _self.jiraUrl = setting.jiraUrl;
-      _self.jiraUsername = setting.jiraUsername;
+      _self.jiraEmail = setting.jiraEmail;
       _self.jiraMerge = setting.jiraMerge;
       _self.togglApiToken = setting.togglApiToken;
     });
@@ -76,7 +76,7 @@ export default {
       _self.isSaving = true;
       chrome.storage.sync.set({
         jiraUrl: _self.jiraUrl,
-        jiraUsername: _self.jiraUsername,
+        jiraEmail: _self.jiraEmail,
         jiraMerge: _self.jiraMerge,
         togglApiToken: _self.togglApiToken
       }, function () {

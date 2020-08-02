@@ -103,7 +103,7 @@ export default {
       logs: [],
       errorMessage: null,
       jiraUrl: '',
-      jiraUsername: '',
+      jiraEmail: '',
       jiraMerge: true,
       togglApiToken: '',
       isSaving: false,
@@ -140,12 +140,12 @@ export default {
 
     chrome.storage.sync.get({
       jiraUrl: '',
-      jiraUsername: '',
+      jiraEmail: '',
       jiraMerge: true,
       togglApiToken: ''
     }, function (setting) {
       _self.jiraUrl = setting.jiraUrl;
-      _self.jiraUsername = setting.jiraUsername;
+      _self.jiraEmail = setting.jiraEmail;
       _self.jiraMerge = setting.jiraMerge;
       _self.togglApiToken = setting.togglApiToken;
     });
@@ -216,7 +216,7 @@ export default {
         .then(function (response) {
           let worklogs = response.data.worklogs;
           worklogs.forEach(function (worklog) {
-            if (_self.$moment(worklog.started).format('DD/MM/YYYY') === _self.$moment(log.start).format('DD/MM/YYYY') && worklog.author.name === _self.jiraUsername) {
+            if (_self.$moment(worklog.started).format('DD/MM/YYYY') === _self.$moment(log.start).format('DD/MM/YYYY') && worklog.author.emailAddress === _self.jiraEmail) {
               let logIndex = _self.logs.findIndex(i => i.id === log.id);
               if (typeof (_self.logs[logIndex]) !== 'undefined') {
                 _self.logs[logIndex].isSynced = true;
@@ -292,7 +292,10 @@ export default {
   }
   .md-layout-item { position: relative; }
 
-  .inner-container { padding: 20px; }
+  .inner-container {
+    padding: 20px;
+    background: #fff;
+  }
 
   .md-table-cell-container,
   .md-table-head-label { padding: 0 5px; }

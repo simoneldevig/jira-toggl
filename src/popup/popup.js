@@ -19,8 +19,7 @@ global.browser = require('webextension-polyfill');
 Vue.prototype.$browser = global.browser;
 
 /* eslint-disable no-new */
-let popup = new Vue({
+new Vue({
   el: '#app',
-
   render: h => h(App)
 });

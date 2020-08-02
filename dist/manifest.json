@@ -1,7 +1,7 @@
 {
   "name": "Jira Toggl",
   "description": "A web extension for syncing Toggl timelog entries to your Jira Software worklog",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "permissions": [
     "https://*/",
     "storage"
