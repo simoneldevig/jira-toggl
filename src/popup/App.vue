@@ -230,22 +230,25 @@ export default {
     },
     getIssue (log) {
       let _self = this;
-      if (_self.jiraIssueInDescription) {
-        const parsedIssue = log.description.match(/^[A-Z]*-[0-9]*/);
-        if (parsedIssue) {
-          return Promise.resolve(parsedIssue[0]);
+      return new Promise(function (resolve, reject) {
+        if (_self.jiraIssueInDescription) {
+          const parsedIssue = log.description.match(/^[A-Z]*-[0-9]*/);
+          if (parsedIssue) {
+            resolve(parsedIssue[0]);
+          }
+          reject(log);
         }
-        return Promise.resolve(null);
-      }
-      if ((typeof log.pid !== 'undefined')) {
-        return axios.get('https://www.toggl.com/api/v8/projects/' + log.pid, {
-          headers: { Authorization: 'Basic ' + window.btoa(_self.togglApiToken + ':api_token') }
-        })
-          .then(function (issue) {
-            return issue.data.data.name;
-          });
-      }
-      Promise.resolve(null);
+        if ((typeof log.pid !== 'undefined')) {
+          axios.get('https://www.toggl.com/api/v8/projects/' + log.pid, {
+            headers: { Authorization: 'Basic ' + window.btoa(_self.togglApiToken + ':api_token') }
+          })
+            .then(function (issue) {
+              resolve(issue.data.data.name);
+            });
+        } else {
+          reject(log);
+        }
+      });
     },
     fetchEntries () {
       let _self = this;
@@ -263,14 +266,6 @@ export default {
           entries.data.reverse();
           entries.data.forEach(function (log) {
             _self.getIssue(log).then(function (issueName) {
-              if (!issueName) {
-                let logObject = log;
-                logObject.isSynced = false;
-                logObject.issue = 'NO ID';
-                logObject.checked = '';
-                _self.logs.push(logObject);
-                return;
-              }
               let logObject = log;
               logObject.isSynced = false;
               logObject.issue = issueName;
@@ -287,6 +282,13 @@ export default {
                 _self.logs.push(logObject);
               }
               _self.checkIfAlreadyLogged(log);
+            }).catch(function (log) {
+              // There is no ID for the entry but we still need to print it out to the user
+              let logObject = log;
+              logObject.isSynced = false;
+              logObject.issue = 'NO ID';
+              logObject.checked = '';
+              _self.logs.push(logObject);
             });
           });
         })

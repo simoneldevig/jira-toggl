@@ -19,6 +19,7 @@ global.browser = require('webextension-polyfill');
 Vue.prototype.$browser = global.browser;
 
 /* eslint-disable no-new */
+// eslint-disable-next-line no-unused-vars
 let popup = new Vue({
   el: '#app',
 
