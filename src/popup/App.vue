@@ -105,6 +105,7 @@ export default {
       jiraUrl: '',
       jiraEmail: '',
       jiraMerge: true,
+      jiraIssueInDescription: false,
       togglApiToken: '',
       isSaving: false,
       showSnackbar: false
@@ -142,11 +143,13 @@ export default {
       jiraUrl: '',
       jiraEmail: '',
       jiraMerge: true,
+      jiraIssueInDescription: false,
       togglApiToken: ''
     }, function (setting) {
       _self.jiraUrl = setting.jiraUrl;
       _self.jiraEmail = setting.jiraEmail;
       _self.jiraMerge = setting.jiraMerge;
+      _self.jiraIssueInDescription = setting.jiraIssueInDescription;
       _self.togglApiToken = setting.togglApiToken;
     });
   },
@@ -225,6 +228,28 @@ export default {
           });
         });
     },
+    getIssue (log) {
+      let _self = this;
+      return new Promise(function (resolve, reject) {
+        if (_self.jiraIssueInDescription) {
+          const parsedIssue = log.description.match(/^[A-Z]*-[0-9]*/);
+          if (parsedIssue) {
+            resolve(parsedIssue[0]);
+          }
+          reject(log);
+        }
+        if ((typeof log.pid !== 'undefined')) {
+          axios.get('https://www.toggl.com/api/v8/projects/' + log.pid, {
+            headers: { Authorization: 'Basic ' + window.btoa(_self.togglApiToken + ':api_token') }
+          })
+            .then(function (issue) {
+              resolve(issue.data.data.name);
+            });
+        } else {
+          reject(log);
+        }
+      });
+    },
     fetchEntries () {
       let _self = this;
       let startDate = moment(this.startDate).utc(true).toISOString(true).replace('+00:00', 'Z');
@@ -239,36 +264,32 @@ export default {
       })
         .then(function (entries) {
           entries.data.reverse();
-          entries.data.forEach(function (log, index) {
-            if ((typeof log.pid !== 'undefined')) {
-              axios.get('https://www.toggl.com/api/v8/projects/' + log.pid, {
-                headers: { Authorization: 'Basic ' + window.btoa(_self.togglApiToken + ':api_token') }
-              })
-                .then(function (issue) {
-                  let logObject = log;
-                  logObject.isSynced = false;
-                  logObject.issue = issue.data.data.name;
-                  logObject.checked = '';
+          entries.data.forEach(function (log) {
+            _self.getIssue(log).then(function (issueName) {
+              let logObject = log;
+              logObject.isSynced = false;
+              logObject.issue = issueName;
+              logObject.checked = '';
 
-                  if (_self.jiraMerge) {
-                    let logIndex = _self.logs.findIndex(i => i.description === log.description);
-                    if (logIndex !== -1) {
-                      _self.logs[logIndex].duration = _self.logs[logIndex].duration + logObject.duration;
-                    } else {
-                      _self.logs.push(logObject);
-                    }
-                  } else {
-                    _self.logs.push(logObject);
-                  }
-                  _self.checkIfAlreadyLogged(log);
-                });
-            } else {
+              if (_self.jiraMerge) {
+                let logIndex = _self.logs.findIndex(i => i.description === log.description);
+                if (logIndex !== -1) {
+                  _self.logs[logIndex].duration = _self.logs[logIndex].duration + logObject.duration;
+                } else {
+                  _self.logs.push(logObject);
+                }
+              } else {
+                _self.logs.push(logObject);
+              }
+              _self.checkIfAlreadyLogged(log);
+            }).catch(function (log) {
+              // There is no ID for the entry but we still need to print it out to the user
               let logObject = log;
               logObject.isSynced = false;
               logObject.issue = 'NO ID';
               logObject.checked = '';
               _self.logs.push(logObject);
-            }
+            });
           });
         })
         .catch(function (error) {

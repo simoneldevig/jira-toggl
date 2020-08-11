@@ -22,6 +22,7 @@
             <md-input v-model="jiraEmail" />
           </md-field>
           <md-checkbox v-model="jiraMerge">Merge time entries with same comment</md-checkbox>
+          <md-checkbox v-model="jiraIssueInDescription">Parse Jira issue from description</md-checkbox>
           <md-field>
             <label>Toggl API token</label>
             <md-input v-model="togglApiToken" />
@@ -49,6 +50,7 @@ export default {
       jiraUrl: '',
       jiraEmail: '',
       jiraMerge: true,
+      jiraIssueInDescription: false,
       togglApiToken: '',
       isSaving: false,
       showSnackbar: false
@@ -61,11 +63,13 @@ export default {
       jiraUrl: '',
       jiraEmail: '',
       jiraMerge: true,
+      jiraIssueInDescription: false,
       togglApiToken: ''
     }, function (setting) {
       _self.jiraUrl = setting.jiraUrl;
       _self.jiraEmail = setting.jiraEmail;
       _self.jiraMerge = setting.jiraMerge;
+      _self.jiraIssueInDescription = setting.jiraIssueInDescription;
       _self.togglApiToken = setting.togglApiToken;
     });
   },
@@ -78,6 +82,7 @@ export default {
         jiraUrl: _self.jiraUrl,
         jiraEmail: _self.jiraEmail,
         jiraMerge: _self.jiraMerge,
+        jiraIssueInDescription: _self.jiraIssueInDescription,
         togglApiToken: _self.togglApiToken
       }, function () {
         _self.isSaving = false;
