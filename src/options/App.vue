@@ -12,7 +12,7 @@
     </div>
     <div class="inner-container">
       <div class="md-layout md-gutter">
-        <div class="md-layout-item md-size-50">
+        <div class="md-layout-item md-size-100">
           <md-field>
             <label>Jira Server url (https://jira.atlassian.net)</label>
             <md-input v-model="jiraUrl" />
