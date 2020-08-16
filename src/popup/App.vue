@@ -213,13 +213,22 @@ export default {
       let mDisplay = m > 0 ? m + 'm' : '';
       return hDisplay + ' ' + mDisplay;
     },
+    isSameStart (worklog, log) {
+      const _self = this;
+      if (_self.jiraMerge) {
+        const format = 'DD/MM/YYYY';
+        return _self.$moment(worklog.started).format(format) === _self.$moment(log.start).format(format);
+      } else {
+        return worklog.started === _self.toJiraDateTime(log.start);
+      }
+    },
     checkIfAlreadyLogged (log) {
       const _self = this;
       axios.get(_self.jiraUrl + '/rest/api/latest/issue/' + log.issue + '/worklog')
         .then(function (response) {
           let worklogs = response.data.worklogs;
           worklogs.forEach(function (worklog) {
-            if (_self.$moment(worklog.started).format('DD/MM/YYYY') === _self.$moment(log.start).format('DD/MM/YYYY') && worklog.author.emailAddress === _self.jiraEmail) {
+            if (_self.isSameStart(worklog, log) && worklog.author.emailAddress === _self.jiraEmail) {
               let logIndex = _self.logs.findIndex(i => i.id === log.id);
               if (typeof (_self.logs[logIndex]) !== 'undefined') {
                 _self.logs[logIndex].isSynced = true;
