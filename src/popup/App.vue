@@ -91,7 +91,7 @@ import axios from 'axios';
 import moment from 'moment';
 
 const initalStartDate = new Date(moment().startOf('day'));
-const initalEndDate = new Date(moment().add(1, 'days').endOf('day'));
+const initalEndDate = new Date(moment().endOf('day'));
 
 export default {
   data () {
@@ -256,7 +256,7 @@ export default {
     fetchEntries () {
       let _self = this;
       let startDate = moment(this.startDate).utc(true).toISOString(true).replace('+00:00', 'Z');
-      let endDate = moment(this.endDate).utc(true).toISOString(true).replace('+00:00', 'Z');
+      let endDate = moment(this.endDate).add(1, 'days').utc(true).toISOString(true).replace('+00:00', 'Z');
 
       axios.get('https://www.toggl.com/api/v8/time_entries', {
         headers: { Authorization: 'Basic ' + window.btoa(_self.togglApiToken + ':api_token') },
