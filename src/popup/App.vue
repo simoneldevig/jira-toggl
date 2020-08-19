@@ -61,7 +61,7 @@
               <md-table-cell class="no-wrap" />
               <md-table-cell />
               <md-table-cell class="no-wrap"><b>TOTAL</b></md-table-cell>
-              <md-table-cell class="no-wrap">{{ formatDuration(totalDuration) }}</md-table-cell>
+              <md-table-cell class="no-wrap">{{ totalDuration() }}</md-table-cell>
               <md-table-cell class="no-wrap" />
             </md-table-row>
           </md-table>
@@ -110,15 +110,6 @@ export default {
       isSaving: false,
       showSnackbar: false
     };
-  },
-  computed: {
-    totalDuration () {
-      let totalDuration = 0;
-      this.logs.forEach(function (log) {
-        totalDuration += log.duration;
-      });
-      return totalDuration;
-    }
   },
   watch: {
     startDate: function (newVal, oldVal) {
@@ -311,6 +302,21 @@ export default {
             _self.errorMessage = typeof (error.response) !== 'undefined' ? error.response.statusText : error.response;
           }
         });
+    },
+    totalDuration () {
+      let _self = this;
+      if (!_self.logs.length) {
+        return 'Loading...';
+      }
+      let totalDuration = 0;
+      _self.logs.forEach(function (log) {
+        if (log.duration) {
+          totalDuration += log.duration;
+        }
+      });
+      if (totalDuration) {
+        return _self.formatDuration(totalDuration);
+      }
     }
   }
 };
