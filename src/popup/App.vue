@@ -44,7 +44,7 @@
 
             <md-table-row v-for="log in logs" :key="log.id">
               <md-table-cell class="no-wrap">
-                <md-checkbox v-if="log.issue === 'NO ID' || log.isSynced" v-model="checkedLogs" disabled :value="log" />
+                <md-checkbox v-if="log.issue === 'NO ID' || log.isSynced || log.duration < 60" v-model="checkedLogs" disabled :value="log" />
                 <md-checkbox v-else v-model="checkedLogs" :value="log" />
               </md-table-cell>
               <md-table-cell class="no-wrap">{{ log.issue }}</md-table-cell>
@@ -207,6 +207,9 @@ export default {
     },
     formatDuration (duration) {
       duration = Number(duration);
+      if (duration < 60) {
+        return 'Too short';
+      }
       let h = Math.floor(duration / 3600);
       let m = Math.floor(duration % 3600 / 60);
       let hDisplay = h > 0 ? h + 'h' : '';
