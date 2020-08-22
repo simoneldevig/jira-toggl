@@ -44,7 +44,7 @@
 
             <md-table-row v-for="log in logs" :key="log.id">
               <md-table-cell class="no-wrap">
-                <md-checkbox v-if="log.issue === 'NO ID' || log.isSynced" v-model="checkedLogs" disabled :value="log" />
+                <md-checkbox v-if="log.issue === 'NO ID' || log.isSynced || log.duration < 60" v-model="checkedLogs" disabled :value="log" />
                 <md-checkbox v-else v-model="checkedLogs" :value="log" />
               </md-table-cell>
               <md-table-cell class="no-wrap">{{ log.issue }}</md-table-cell>
@@ -61,7 +61,7 @@
               <md-table-cell class="no-wrap" />
               <md-table-cell />
               <md-table-cell class="no-wrap"><b>TOTAL</b></md-table-cell>
-              <md-table-cell class="no-wrap">{{ formatDuration(totalDuration) }}</md-table-cell>
+              <md-table-cell class="no-wrap">{{ totalDuration() }}</md-table-cell>
               <md-table-cell class="no-wrap" />
             </md-table-row>
           </md-table>
@@ -91,7 +91,7 @@ import axios from 'axios';
 import moment from 'moment';
 
 const initalStartDate = new Date(moment().startOf('day'));
-const initalEndDate = new Date(moment().add(1, 'days').endOf('day'));
+const initalEndDate = new Date(moment().endOf('day'));
 
 export default {
   data () {
@@ -110,15 +110,6 @@ export default {
       isSaving: false,
       showSnackbar: false
     };
-  },
-  computed: {
-    totalDuration () {
-      let totalDuration = 0;
-      this.logs.forEach(function (log) {
-        totalDuration += log.duration;
-      });
-      return totalDuration;
-    }
   },
   watch: {
     startDate: function (newVal, oldVal) {
@@ -207,6 +198,9 @@ export default {
     },
     formatDuration (duration) {
       duration = Number(duration);
+      if (duration < 60) {
+        return 'Too short';
+      }
       let h = Math.floor(duration / 3600);
       let m = Math.floor(duration % 3600 / 60);
       let hDisplay = h > 0 ? h + 'h' : '';
@@ -262,7 +256,7 @@ export default {
     fetchEntries () {
       let _self = this;
       let startDate = moment(this.startDate).utc(true).toISOString(true).replace('+00:00', 'Z');
-      let endDate = moment(this.endDate).utc(true).toISOString(true).replace('+00:00', 'Z');
+      let endDate = moment(this.endDate).add(1, 'days').utc(true).toISOString(true).replace('+00:00', 'Z');
 
       axios.get('https://www.toggl.com/api/v8/time_entries', {
         headers: { Authorization: 'Basic ' + window.btoa(_self.togglApiToken + ':api_token') },
@@ -308,6 +302,21 @@ export default {
             _self.errorMessage = typeof (error.response) !== 'undefined' ? error.response.statusText : error.response;
           }
         });
+    },
+    totalDuration () {
+      let _self = this;
+      if (!_self.logs.length) {
+        return 'Loading...';
+      }
+      let totalDuration = 0;
+      _self.logs.forEach(function (log) {
+        if (log.duration) {
+          totalDuration += log.duration;
+        }
+      });
+      if (totalDuration) {
+        return _self.formatDuration(totalDuration);
+      }
     }
   }
 };
