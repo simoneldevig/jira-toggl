@@ -59,13 +59,13 @@ export default {
   created () {
     const _self = this;
 
-    chrome.storage.sync.get({
+    browser.storage.sync.get({
       jiraUrl: '',
       jiraEmail: '',
       jiraMerge: true,
       jiraIssueInDescription: false,
       togglApiToken: ''
-    }, function (setting) {
+    }).then((setting) => {
       _self.jiraUrl = setting.jiraUrl;
       _self.jiraEmail = setting.jiraEmail;
       _self.jiraMerge = setting.jiraMerge;
@@ -78,13 +78,13 @@ export default {
       const _self = this;
 
       _self.isSaving = true;
-      chrome.storage.sync.set({
+      browser.storage.sync.set({
         jiraUrl: _self.jiraUrl,
         jiraEmail: _self.jiraEmail,
         jiraMerge: _self.jiraMerge,
         jiraIssueInDescription: _self.jiraIssueInDescription,
         togglApiToken: _self.togglApiToken
-      }, function () {
+      }).then(() => {
         _self.isSaving = false;
         _self.showSnackbar = true;
       });

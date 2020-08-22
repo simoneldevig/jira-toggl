@@ -130,13 +130,13 @@ export default {
   created () {
     const _self = this;
 
-    chrome.storage.sync.get({
+    browser.storage.sync.get({
       jiraUrl: '',
       jiraEmail: '',
       jiraMerge: true,
       jiraIssueInDescription: false,
       togglApiToken: ''
-    }, function (setting) {
+    }).then((setting) => {
       _self.jiraUrl = setting.jiraUrl;
       _self.jiraEmail = setting.jiraEmail;
       _self.jiraMerge = setting.jiraMerge;
@@ -243,7 +243,7 @@ export default {
         }
         if ((typeof log.pid !== 'undefined')) {
           axios.get('https://www.toggl.com/api/v8/projects/' + log.pid, {
-            headers: { Authorization: 'Basic ' + window.btoa(_self.togglApiToken + ':api_token') }
+            headers: { Authorization: 'Basic ' + btoa(_self.togglApiToken + ':api_token') }
           })
             .then(function (issue) {
               resolve(issue.data.data.name);
@@ -259,7 +259,7 @@ export default {
       let endDate = moment(this.endDate).add(1, 'days').utc(true).toISOString(true).replace('+00:00', 'Z');
 
       axios.get('https://www.toggl.com/api/v8/time_entries', {
-        headers: { Authorization: 'Basic ' + window.btoa(_self.togglApiToken + ':api_token') },
+        headers: { Authorization: 'Basic ' + btoa(_self.togglApiToken + ':api_token') },
         params: {
           start_date: startDate,
           end_date: endDate
