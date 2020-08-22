@@ -328,6 +328,7 @@ export default {
     background: #fff;
     width: 700px;
     height: 600px;
+    overflow: auto;
   }
   .md-layout-item { position: relative; }
 

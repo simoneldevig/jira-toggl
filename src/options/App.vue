@@ -28,7 +28,7 @@
             <md-input v-model="togglApiToken" />
           </md-field>
           <div class="button__container">
-            <md-button class="md-raised md-accent" @click="saveSettings">
+            <md-button class="md-raised md-accent button__item" @click="saveSettings">
               <span v-show="!isSaving">Save settings</span>
               <span v-show="isSaving">Saving...</span>
             </md-button>
@@ -101,6 +101,11 @@ export default {
   .button__container {
     display: flex;
     justify-content: flex-end;
+  }
+
+  .button__item {
+    background: var(--md-theme-default-accent) !important;
+    background-color: var(--md-theme-default-accent)!important;
   }
 
   img { width: 32px; }
