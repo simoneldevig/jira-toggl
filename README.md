@@ -17,7 +17,7 @@ A web extension for syncing Toggl timelog entries to your Jira Software worklog.
 ## Download
 Link to Chrome store: https://tinyurl.com/y4pj9por
 
-Link to Firefox store: TBA
+Link to Firefox store: https://tinyurl.com/y5as5wkc
 
 ## Contributing To This Project
 
