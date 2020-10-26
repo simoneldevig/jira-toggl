@@ -21,6 +21,14 @@
             <label>Jira email</label>
             <md-input v-model="jiraEmail" />
           </md-field>
+          <md-field>
+            <label>Jira UserName</label>
+            <md-input v-model="jiraUserName" />
+          </md-field>
+          <md-field>
+            <label>Jira Password</label>
+            <md-input v-model="jiraPassword" type="password"/>
+          </md-field>
           <md-checkbox v-model="jiraMerge">Merge time entries with same comment</md-checkbox>
           <md-checkbox v-model="jiraIssueInDescription">Parse Jira issue from description</md-checkbox>
           <md-field>
@@ -49,6 +57,8 @@ export default {
     return {
       jiraUrl: '',
       jiraEmail: '',
+      jiraUserName: '',
+      jiraPassword: '',
       jiraMerge: true,
       jiraIssueInDescription: false,
       togglApiToken: '',
@@ -62,12 +72,16 @@ export default {
     browser.storage.sync.get({
       jiraUrl: '',
       jiraEmail: '',
+      jiraUserName: '',
+      jiraPassword: '',
       jiraMerge: true,
       jiraIssueInDescription: false,
       togglApiToken: ''
     }).then((setting) => {
       _self.jiraUrl = setting.jiraUrl;
       _self.jiraEmail = setting.jiraEmail;
+      _self.jiraUserName = setting.jiraUserName;
+      _self.jiraPassword = setting.jiraPassword;
       _self.jiraMerge = setting.jiraMerge;
       _self.jiraIssueInDescription = setting.jiraIssueInDescription;
       _self.togglApiToken = setting.togglApiToken;
@@ -81,6 +95,8 @@ export default {
       browser.storage.sync.set({
         jiraUrl: _self.jiraUrl,
         jiraEmail: _self.jiraEmail,
+        jiraUserName: _self.jiraUserName,
+        jiraPassword: _self.jiraPassword,
         jiraMerge: _self.jiraMerge,
         jiraIssueInDescription: _self.jiraIssueInDescription,
         togglApiToken: _self.togglApiToken

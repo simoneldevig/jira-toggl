@@ -89,3 +89,6 @@ typings/
 
 # Dist
 dist/
+
+#JetBrains IDEA
+.idea

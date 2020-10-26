@@ -4,13 +4,9 @@
   "version": null,
   "permissions": [
     "https://*/",
+    "http://*/",
     "storage"
   ],
-  "applications": {
-    "gecko": {
-      "id": "{b8f6741b-8299-451d-ab45-6d4838409f07}"
-    }
-  },
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "manifest_version": 2,
   "icons": {
