@@ -104,8 +104,6 @@ export default {
       errorMessage: null,
       jiraUrl: '',
       jiraEmail: '',
-      jiraUserName: '',
-      jiraPassword: '',
       jiraMerge: true,
       jiraIssueInDescription: false,
       togglApiToken: '',
@@ -143,8 +141,6 @@ export default {
     }).then((setting) => {
       _self.jiraUrl = setting.jiraUrl;
       _self.jiraEmail = setting.jiraEmail;
-      _self.jiraUserName = setting.jiraUserName;
-      _self.jiraPassword = setting.jiraPassword;
       _self.jiraMerge = setting.jiraMerge;
       _self.jiraIssueInDescription = setting.jiraIssueInDescription;
       _self.togglApiToken = setting.togglApiToken;
@@ -158,11 +154,6 @@ export default {
           timeSpentSeconds: log.duration,
           comment: log.description,
           started: _self.toJiraDateTime(log.start)
-        }, {
-          auth: {
-            username: _self.jiraUserName,
-            password: _self.jiraPassword
-          }
         })
           .then(function (response) {
             _self.isSaving = false;
@@ -184,7 +175,7 @@ export default {
       }
       let dateString = jiraDate.toISOString();
       let timeZoneString;
-      timeZoneString = new Date().toString().match(/([-\+][0-9]+)\s/)[1];
+      timeZoneString = new Date().toString().match(/([-+][0-9]+)\s/)[1];
       dateString = dateString.replace('Z', timeZoneString);
       return dateString;
     },
@@ -222,12 +213,7 @@ export default {
     },
     checkIfAlreadyLogged (log) {
       const _self = this;
-      axios.get(_self.jiraUrl + '/rest/api/latest/issue/' + log.issue + '/worklog', {
-        auth: {
-          username: _self.jiraUserName,
-          password: _self.jiraPassword
-        }
-      })
+      axios.get(_self.jiraUrl + '/rest/api/latest/issue/' + log.issue + '/worklog')
         .then(function (response) {
           let worklogs = response.data.worklogs;
           worklogs.forEach(function (worklog) {
