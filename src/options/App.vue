@@ -81,8 +81,6 @@ export default {
       browser.storage.sync.set({
         jiraUrl: _self.jiraUrl,
         jiraEmail: _self.jiraEmail,
-        jiraUserName: _self.jiraUserName,
-        jiraPassword: _self.jiraPassword,
         jiraMerge: _self.jiraMerge,
         jiraIssueInDescription: _self.jiraIssueInDescription,
         togglApiToken: _self.togglApiToken

@@ -133,8 +133,6 @@ export default {
     browser.storage.sync.get({
       jiraUrl: '',
       jiraEmail: '',
-      jiraUserName: '',
-      jiraPassword: '',
       jiraMerge: true,
       jiraIssueInDescription: false,
       togglApiToken: ''
@@ -217,7 +215,7 @@ export default {
         .then(function (response) {
           let worklogs = response.data.worklogs;
           worklogs.forEach(function (worklog) {
-            if (_self.isSameStart(worklog, log) && worklog.author.emailAddress.toLowerCase() === _self.jiraEmail.toLowerCase()) {
+            if (_self.isSameStart(worklog, log) && worklog.author.emailAddress?.toLowerCase() === _self.jiraEmail?.toLowerCase()) {
               let logIndex = _self.logs.findIndex(i => i.id === log.id);
               if (typeof (_self.logs[logIndex]) !== 'undefined') {
                 _self.logs[logIndex].isSynced = true;
