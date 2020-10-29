@@ -226,7 +226,6 @@ export default {
     },
     getIssue (log) {
       let _self = this;
-      console.log('Log :', log);
       return new Promise(function (resolve, reject) {
         if (_self.jiraIssueInDescription) {
           const parsedIssue = log.description.match(/^[A-Z]*-[0-9]*/);
