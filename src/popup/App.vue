@@ -172,15 +172,8 @@ export default {
         jiraDate = new Date(parsedDate + 2 * 3600 * 1000);
       }
       let dateString = jiraDate.toISOString();
-      let timeZone = jiraDate.getTimezoneOffset() / (-60);
-      let absTimeZone = Math.abs(timeZone);
       let timeZoneString;
-      let sign = timeZone > 0 ? '+' : '-';
-      if (absTimeZone < 10) {
-        timeZoneString = sign + '0' + absTimeZone + '00';
-      } else {
-        timeZoneString = sign + absTimeZone + '00';
-      }
+      timeZoneString = new Date().toString().match(/([-+][0-9]+)\s/)[1];
       dateString = dateString.replace('Z', timeZoneString);
       return dateString;
     },
@@ -222,7 +215,7 @@ export default {
         .then(function (response) {
           let worklogs = response.data.worklogs;
           worklogs.forEach(function (worklog) {
-            if (_self.isSameStart(worklog, log) && worklog.author.emailAddress === _self.jiraEmail) {
+            if (_self.isSameStart(worklog, log) && worklog.author.emailAddress?.toLowerCase() === _self.jiraEmail?.toLowerCase()) {
               let logIndex = _self.logs.findIndex(i => i.id === log.id);
               if (typeof (_self.logs[logIndex]) !== 'undefined') {
                 _self.logs[logIndex].isSynced = true;

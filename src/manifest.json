@@ -4,6 +4,7 @@
   "version": null,
   "permissions": [
     "https://*/",
+    "http://*/",
     "storage"
   ],
   "applications": {
