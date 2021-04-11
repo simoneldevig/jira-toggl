@@ -147,11 +147,20 @@ export default {
   methods: {
     syncToJira () {
       const _self = this;
+      const headers = {
+        'X-Atlassian-Token': 'no-check',
+        'User-Agent': ''
+      };
       this.checkedLogs.forEach(function (log) {
-        axios.post(_self.jiraUrl + '/rest/api/latest/issue/' + log.issue + '/worklog', {
-          timeSpentSeconds: log.duration,
-          comment: log.description,
-          started: _self.toJiraDateTime(log.start)
+        axios({
+          method: 'post',
+          url: _self.jiraUrl + '/rest/api/latest/issue/' + log.issue + '/worklog',
+          data: {
+            timeSpentSeconds: log.duration,
+            comment: log.description,
+            started: _self.toJiraDateTime(log.start)
+          },
+          headers: headers
         })
           .then(function (response) {
             _self.isSaving = false;
