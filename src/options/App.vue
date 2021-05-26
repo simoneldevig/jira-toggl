@@ -5,7 +5,7 @@
         <md-toolbar md-elevation="0">
           <div class="md-layout md-alignment-center-left">
             <img src="/icons/jira-toggl_48.png" alt="Avatar">
-            <h3 class="md-title">Jira Toggl settings</h3>
+            <h3 class="md-title">Toggl2Jira - Xoia - Settings</h3>
           </div>
         </md-toolbar>
       </div>
@@ -23,6 +23,7 @@
           </md-field>
           <md-checkbox v-model="jiraMerge">Merge time entries with same comment</md-checkbox>
           <md-checkbox v-model="jiraIssueInDescription">Parse Jira issue from description</md-checkbox>
+          <md-checkbox v-model="worklogWihtoutDescription">Don't include Issue Title in worklog</md-checkbox>
           <md-field>
             <label>Toggl API token</label>
             <md-input v-model="togglApiToken" />
@@ -49,8 +50,9 @@ export default {
     return {
       jiraUrl: '',
       jiraEmail: '',
-      jiraMerge: true,
-      jiraIssueInDescription: false,
+      jiraMerge: false,
+      jiraIssueInDescription: true,
+      worklogWihtoutDescription: true,
       togglApiToken: '',
       isSaving: false,
       showSnackbar: false
@@ -62,14 +64,16 @@ export default {
     browser.storage.sync.get({
       jiraUrl: '',
       jiraEmail: '',
-      jiraMerge: true,
-      jiraIssueInDescription: false,
+      jiraMerge: false,
+      jiraIssueInDescription: true,
+      worklogWihtoutDescription: true,
       togglApiToken: ''
     }).then((setting) => {
       _self.jiraUrl = setting.jiraUrl;
       _self.jiraEmail = setting.jiraEmail;
       _self.jiraMerge = setting.jiraMerge;
       _self.jiraIssueInDescription = setting.jiraIssueInDescription;
+      _self.worklogWihtoutDescription =  setting.worklogWihtoutDescription;
       _self.togglApiToken = setting.togglApiToken;
     });
   },
@@ -83,6 +87,7 @@ export default {
         jiraEmail: _self.jiraEmail,
         jiraMerge: _self.jiraMerge,
         jiraIssueInDescription: _self.jiraIssueInDescription,
+        worklogWihtoutDescription: _self.worklogWihtoutDescription,
         togglApiToken: _self.togglApiToken
       }).then(() => {
         _self.isSaving = false;

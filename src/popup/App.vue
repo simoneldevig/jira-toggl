@@ -5,7 +5,7 @@
         <md-toolbar md-elevation="0">
           <div class="md-layout md-alignment-center-left">
             <img src="/icons/jira-toggl_48.png" alt="Avatar">
-            <h3 class="md-title">Jira Toggl</h3>
+            <h3 class="md-title">Toggl2Jira - Xoia</h3>
           </div>
           <div class="md-toolbar-section-end">
             <a href="../options/options.html" target="_blank">
@@ -47,7 +47,7 @@
                 <md-checkbox v-if="log.issue === 'NO ID' || log.isSynced || log.duration < 60" v-model="checkedLogs" disabled :value="log" />
                 <md-checkbox v-else v-model="checkedLogs" :value="log" />
               </md-table-cell>
-              <md-table-cell class="no-wrap">{{ log.issue }}</md-table-cell>
+              <md-table-cell class="no-wrap"><a v-if="log.issue != 'NO ID'" v-bind:href="jiraUrl+'/browse/'+ log.issue" target="_blank">{{ log.issue }}</a><a v-else>{{ log.issue }}</a></md-table-cell>
               <md-table-cell>{{ log.description }}</md-table-cell>
               <md-table-cell class="no-wrap">{{ $moment(log.start).format("l") }}</md-table-cell>
               <md-table-cell class="no-wrap">{{ formatDuration(log.duration) }}</md-table-cell>
@@ -102,10 +102,11 @@ export default {
       endDate: initalEndDate,
       logs: [],
       errorMessage: null,
-      jiraUrl: '',
+      jiraUrl: 'https://xoiasoftware.atlassian.net',
       jiraEmail: '',
-      jiraMerge: true,
-      jiraIssueInDescription: false,
+      jiraMerge: false,
+      jiraIssueInDescription: true,
+      worklogWihtoutDescription: true,
       togglApiToken: '',
       isSaving: false,
       showSnackbar: false
@@ -131,16 +132,18 @@ export default {
     const _self = this;
 
     browser.storage.sync.get({
-      jiraUrl: '',
+      jiraUrl: 'https://xoiasoftware.atlassian.net',
       jiraEmail: '',
-      jiraMerge: true,
-      jiraIssueInDescription: false,
+      jiraMerge: false,
+      jiraIssueInDescription: true,
+      worklogWihtoutDescription: true,
       togglApiToken: ''
     }).then((setting) => {
       _self.jiraUrl = setting.jiraUrl;
       _self.jiraEmail = setting.jiraEmail;
       _self.jiraMerge = setting.jiraMerge;
       _self.jiraIssueInDescription = setting.jiraIssueInDescription;
+      _self.worklogWihtoutDescription = setting.worklogWihtoutDescription;
       _self.togglApiToken = setting.togglApiToken;
     });
   },
@@ -157,7 +160,7 @@ export default {
           url: _self.jiraUrl + '/rest/api/latest/issue/' + log.issue + '/worklog',
           data: {
             timeSpentSeconds: log.duration,
-            comment: log.description,
+            comment: _self.worklogWihtoutDescription ? log.description.replace(log.issue,"") : log.description,
             started: _self.toJiraDateTime(log.start)
           },
           headers: headers
