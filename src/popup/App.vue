@@ -66,7 +66,7 @@
               <md-table-cell class="no-wrap"><a v-if="log.issue != 'NO ID'" v-bind:href="jiraUrl+'/browse/'+ log.issue" target="_blank">{{ log.issue }}</a><a v-else>{{ log.issue }}</a></md-table-cell>
               <md-table-cell>{{ log.description }}</md-table-cell>
               <md-table-cell class="no-wrap">{{ $moment(log.start).format("l") }}</md-table-cell>
-              <md-table-cell class="no-wrap">{{ formatDuration(log.duration) }}</md-table-cell>
+              <md-table-cell class="no-wrap" :class="log.duration > 60 ? 'black' : 'red'">{{ formatDuration(log.duration) }}</md-table-cell>
               <md-table-cell class="no-wrap">
                 <md-icon v-show="log.isSynced" class="md-accent">check_circle</md-icon>
               </md-table-cell>
@@ -355,9 +355,10 @@ export default {
       if (!_self.logs.length) {
         return  _self.blockFetch ? 'Loading...' : 'No entries!';
       }
+
       let totalDuration = 0;
       _self.logs.forEach(function (log) {
-        if (log.duration) {
+        if (log.duration && log.duration > 0) {
           totalDuration += log.duration;
         }
       });
@@ -450,6 +451,7 @@ export default {
 
   .red{
     color:red;
+    font-weight: bold;
   }
 
   .black{
