@@ -19,8 +19,12 @@
     </div>
     <div class="inner-container">
       <div class="md-layout md-gutter">
-        <md-button class="md-raised md-accent" @click="dayMinus">
-          <span>-</span>
+        <md-button class="md-icon-button" @click="moveToday">
+          <md-icon>restart_alt</md-icon>
+        </md-button>
+
+        <md-button :disabled='blockFetch' class="md-fab md-mini md-primary md-button navigate-before" @click="dayMinus">
+          <md-icon>navigate_before</md-icon>
         </md-button>
 
         <div class="md-layout-item">
@@ -31,14 +35,14 @@
           <span class="datepicker-label md-caption">End date</span>
           <md-datepicker v-model="endDate" md-immediately />
         </div>
-
-        <md-button class="md-raised md-accent" @click="dayPlus">
-          <span>+</span>
+        <md-button :disabled='blockFetch' class="md-fab md-mini md-primary md-button navigate-before" @click="dayPlus">
+          <md-icon>navigate_next</md-icon>
         </md-button>
 
         <md-button class="md-icon-button" @click="refreshEntries">
-          <md-icon>refresh</md-icon>
+          <md-icon>autorenew</md-icon>
         </md-button>
+
       </div>
       <div class="md-layout">
         <div class="md-layout-item">
@@ -114,7 +118,7 @@ export default {
       endDate: initalEndDate,
       logs: [],
       errorMessage: null,
-      jiraUrl: 'https://xoiasoftware.atlassian.net',
+      jiraUrl: '',
       jiraEmail: '',
       jiraMerge: false,
       jiraIssueInDescription: true,
@@ -122,32 +126,18 @@ export default {
       togglApiToken: '',
       isSaving: false,
       showSnackbar: false,
-      blockFetch: false,
-      ignoreDate: false
+      blockFetch: false
     };
   },
   watch: {
     startDate: function (newVal, oldVal) {
-      if(this.ignoreDate){
-        return;
-      }else{
-        if (newVal.toString() !== oldVal.toString()) {
-          console.log(this.startDate);
-          this.checkedLogs = [];
-          this.logs = [];
-          this.fetchEntries();
-        }
+      if (newVal.toString() !== oldVal.toString()) {
+        this.refreshEntries();
       }
     },
     endDate: function (newVal, oldVal) {
-      if(this.ignoreDate){
-        return;
-      }else{
-        if (newVal.toString() !== oldVal.toString()) {
-          this.checkedLogs = [];
-          this.logs = [];
-          this.fetchEntries();
-        }
+      if (newVal.toString() !== oldVal.toString()) {
+        this.refreshEntries();
       }
     }
   },
@@ -242,9 +232,15 @@ export default {
     },
     formatDuration (duration) {
       duration = Number(duration);
+
+      if(duration < 0){
+        return 'WIP';
+      }
+
       if (duration < 60) {
         return 'Too short';
       }
+      
       let h = Math.floor(duration / 3600);
       let m = Math.floor(duration % 3600 / 60);
       let hDisplay = h > 0 ? h + 'h' : '';
@@ -337,7 +333,6 @@ export default {
               _self.checkIfAlreadyLogged(log);
             }).catch(function (log) {
               // There is no ID for the entry but we still need to print it out to the user
-              _self.blockFetch = false;
               let logObject = log;
               logObject.isSynced = false;
               logObject.issue = 'NO ID';
@@ -358,7 +353,7 @@ export default {
     totalDuration () {
       let _self = this;
       if (!_self.logs.length) {
-        return 'Loading...';
+        return  _self.blockFetch ? 'Loading...' : 'No entries!';
       }
       let totalDuration = 0;
       _self.logs.forEach(function (log) {
@@ -373,22 +368,21 @@ export default {
     dayMinus(){
       if(this.blockFetch)
         return;
-
-      this.ignoreDate = true;
-      let newDate = moment(this.startDate).add(-1, 'days');
-      this.startDate = new Date(newDate.startOf('day'));
-      //this.endDate = new Date(newDate.endOf('day'));
-      this.endDate = this.startDate;
-      this.refreshEntries();
+      this.moveDays(-1);
     },
     dayPlus(){
       if(this.blockFetch)
         return;
-
-      this.ignoreDate = true;
-      let newDate = moment(this.startDate).add(1, 'days');
+      this.moveDays(1);
+    },
+    moveDays(ndays) {
+      let newDate = moment(this.startDate).add(ndays, 'days');
       this.startDate = new Date(newDate.startOf('day'));
-      //this.endDate = new Date(newDate.endOf('day'));
+      this.endDate = this.startDate;
+      this.refreshEntries();
+    },
+    moveToday(){
+      this.startDate = new Date(moment().startOf('day'));
       this.endDate = this.startDate;
       this.refreshEntries();
     }
@@ -453,4 +447,12 @@ export default {
   .custom-checkbox { margin-top: 4px; }
 
   img { width: 32px; }
+
+  .red{
+    color:red;
+  }
+
+  .black{
+    color:black;
+  }
 </style>
