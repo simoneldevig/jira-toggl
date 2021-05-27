@@ -35,6 +35,10 @@
         <md-button class="md-raised md-accent" @click="dayPlus">
           <span>+</span>
         </md-button>
+
+        <md-button class="md-icon-button" @click="refreshEntries">
+          <md-icon>refresh</md-icon>
+        </md-button>
       </div>
       <div class="md-layout">
         <div class="md-layout-item">
@@ -123,22 +127,27 @@ export default {
     };
   },
   watch: {
-    // startDate: function (newVal, oldVal) {
-    //   if(this.ignoreDate){
-    //     return;
-    //   }
-
-    //   if (newVal.toString() !== oldVal.toString()) {
-    //     this.checkedLogs = [];
-    //     this.logs = [];
-    //     this.fetchEntries();
-    //   }
-    // },
+    startDate: function (newVal, oldVal) {
+      if(this.ignoreDate){
+        return;
+      }else{
+        if (newVal.toString() !== oldVal.toString()) {
+          console.log(this.startDate);
+          this.checkedLogs = [];
+          this.logs = [];
+          this.fetchEntries();
+        }
+      }
+    },
     endDate: function (newVal, oldVal) {
-      if (newVal.toString() !== oldVal.toString()) {
-        this.checkedLogs = [];
-        this.logs = [];
-        this.fetchEntries();
+      if(this.ignoreDate){
+        return;
+      }else{
+        if (newVal.toString() !== oldVal.toString()) {
+          this.checkedLogs = [];
+          this.logs = [];
+          this.fetchEntries();
+        }
       }
     }
   },
@@ -164,6 +173,11 @@ export default {
     });
   },
   methods: {
+    refreshEntries () {
+        this.checkedLogs = [];
+        this.logs = [];
+        this.fetchEntries();
+    },
     processJiraDescription (description) {
       const _self = this;
       if(_self.worklogDescriptionSplit){
@@ -285,12 +299,13 @@ export default {
     },
     fetchEntries () {
       let _self = this;
+
       let startDate = moment(this.startDate).utc(true).toISOString(true).replace('+00:00', 'Z');
       let endDate = moment(this.endDate).add(1, 'days').utc(true).toISOString(true).replace('+00:00', 'Z');
 
       if(_self.blockFetch)
         return;
-      
+
       _self.blockFetch = true;
       axios.get('https://www.toggl.com/api/v8/time_entries', {
         headers: { Authorization: 'Basic ' + btoa(_self.togglApiToken + ':api_token') },
@@ -301,7 +316,6 @@ export default {
       })
         .then(function (entries) {
           _self.blockFetch = false;
-          _self.ignoreDate = false;
           entries.data.reverse();
           entries.data.forEach(function (log) {
             _self.getIssue(log).then(function (issueName) {
@@ -324,7 +338,6 @@ export default {
             }).catch(function (log) {
               // There is no ID for the entry but we still need to print it out to the user
               _self.blockFetch = false;
-              _self.ignoreDate = false;
               let logObject = log;
               logObject.isSynced = false;
               logObject.issue = 'NO ID';
@@ -335,7 +348,6 @@ export default {
         })
         .catch(function (error) {
           _self.blockFetch = false;
-          _self.ignoreDate = false;
           if (typeof (error.response) !== 'undefined' && error.response.status === 403) {
             _self.errorMessage = 'Please add your Toggl API token';
           } else {
@@ -363,20 +375,22 @@ export default {
         return;
 
       this.ignoreDate = true;
-      this.startDate = new Date(moment(this.startDate).add(-1, 'days').startOf('day'));
-      this.endDate = new Date(moment(this.startDate).endOf('day'));
-      console.log(this.startDate)
-      console.log(this.endDate);
+      let newDate = moment(this.startDate).add(-1, 'days');
+      this.startDate = new Date(newDate.startOf('day'));
+      //this.endDate = new Date(newDate.endOf('day'));
+      this.endDate = this.startDate;
+      this.refreshEntries();
     },
     dayPlus(){
       if(this.blockFetch)
         return;
 
       this.ignoreDate = true;
-      this.startDate = new Date(moment(this.startDate).add(1, 'days').startOf('day'));
-      this.endDate = new Date(moment(this.startDate).endOf('day'));
-      console.log(this.startDate)
-      console.log(this.endDate);
+      let newDate = moment(this.startDate).add(1, 'days');
+      this.startDate = new Date(newDate.startOf('day'));
+      //this.endDate = new Date(newDate.endOf('day'));
+      this.endDate = this.startDate;
+      this.refreshEntries();
     }
   }
 };
