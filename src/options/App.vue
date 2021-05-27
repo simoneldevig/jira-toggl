@@ -23,8 +23,9 @@
           </md-field>
           <md-checkbox v-model="jiraMerge">Merge time entries with same comment</md-checkbox>
           <md-checkbox v-model="jiraIssueInDescription">Parse Jira issue from description</md-checkbox>
-          <md-checkbox v-model="worklogWihtoutDescription">Don't include Issue Title in worklog</md-checkbox>
-          <md-checkbox v-model="worklogDescriptionSplit">Take worklog description from first ":"</md-checkbox>
+          <md-checkbox v-model="worklogWihtoutDescription">Don't include Issue ID in worklog</md-checkbox>
+          <md-checkbox v-model="worklogDescriptionSplit">Split worklog description from first occurrence of:</md-checkbox>
+          <input v-model="stringSplit" placeholder=":" style="contain: content;" />
           <md-field>
             <label>Toggl API token</label>
             <md-input v-model="togglApiToken" />
@@ -50,12 +51,13 @@ export default {
   data () {
     return {
       jiraUrl: '',
-      jiraEmail: '',
-      jiraMerge: true,
+      jiraEmail: 'https://xoiasoftware.atlassian.net',
+      jiraMerge: false,
       jiraIssueInDescription: true,
       worklogWihtoutDescription: true,
       worklogDescriptionSplit: true,
       togglApiToken: '',
+      stringSplit: ":",
       isSaving: false,
       showSnackbar: false
     };
@@ -64,12 +66,13 @@ export default {
     const _self = this;
 
     browser.storage.sync.get({
-      jiraUrl: '',
+      jiraUrl: 'https://xoiasoftware.atlassian.net',
       jiraEmail: '',
       jiraMerge: true,
       jiraIssueInDescription: true,
       worklogWihtoutDescription: true,
       worklogDescriptionSplit: true,
+      stringSplit: ":",
       togglApiToken: ''
     }).then((setting) => {
       _self.jiraUrl = setting.jiraUrl;
@@ -78,6 +81,7 @@ export default {
       _self.jiraIssueInDescription = setting.jiraIssueInDescription;
       _self.worklogWihtoutDescription = setting.worklogWihtoutDescription;
       _self.worklogDescriptionSplit = setting.worklogDescriptionSplit;
+      _self.stringSplit = setting.stringSplit;
       _self.togglApiToken = setting.togglApiToken;
     });
   },
@@ -93,6 +97,7 @@ export default {
         jiraIssueInDescription: _self.jiraIssueInDescription,
         worklogWihtoutDescription: _self.worklogWihtoutDescription,
         worklogDescriptionSplit: _self.worklogDescriptionSplit,
+        stringSplit: _self.stringSplit,
         togglApiToken: _self.togglApiToken
       }).then(() => {
         _self.isSaving = false;
