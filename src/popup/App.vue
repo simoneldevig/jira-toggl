@@ -19,6 +19,10 @@
     </div>
     <div class="inner-container">
       <div class="md-layout md-gutter">
+        <md-button class="md-raised md-accent" @click="dayMinus">
+          <span>-</span>
+        </md-button>
+
         <div class="md-layout-item">
           <span class="datepicker-label md-caption">Start date</span>
           <md-datepicker v-model="startDate" md-immediately />
@@ -27,6 +31,10 @@
           <span class="datepicker-label md-caption">End date</span>
           <md-datepicker v-model="endDate" md-immediately />
         </div>
+
+        <md-button class="md-raised md-accent" @click="dayPlus">
+          <span>+</span>
+        </md-button>
       </div>
       <div class="md-layout">
         <div class="md-layout-item">
@@ -109,17 +117,23 @@ export default {
       worklogWihtoutDescription: true,
       togglApiToken: '',
       isSaving: false,
-      showSnackbar: false
+      showSnackbar: false,
+      blockFetch: false,
+      ignoreDate: false
     };
   },
   watch: {
-    startDate: function (newVal, oldVal) {
-      if (newVal.toString() !== oldVal.toString()) {
-        this.checkedLogs = [];
-        this.logs = [];
-        this.fetchEntries();
-      }
-    },
+    // startDate: function (newVal, oldVal) {
+    //   if(this.ignoreDate){
+    //     return;
+    //   }
+
+    //   if (newVal.toString() !== oldVal.toString()) {
+    //     this.checkedLogs = [];
+    //     this.logs = [];
+    //     this.fetchEntries();
+    //   }
+    // },
     endDate: function (newVal, oldVal) {
       if (newVal.toString() !== oldVal.toString()) {
         this.checkedLogs = [];
@@ -134,9 +148,10 @@ export default {
     browser.storage.sync.get({
       jiraUrl: 'https://xoiasoftware.atlassian.net',
       jiraEmail: '',
-      jiraMerge: false,
+      jiraMerge: true,
       jiraIssueInDescription: true,
       worklogWihtoutDescription: true,
+      worklogDescriptionSplit: true,
       togglApiToken: ''
     }).then((setting) => {
       _self.jiraUrl = setting.jiraUrl;
@@ -144,10 +159,20 @@ export default {
       _self.jiraMerge = setting.jiraMerge;
       _self.jiraIssueInDescription = setting.jiraIssueInDescription;
       _self.worklogWihtoutDescription = setting.worklogWihtoutDescription;
+      _self.worklogDescriptionSplit = setting.worklogDescriptionSplit;
       _self.togglApiToken = setting.togglApiToken;
     });
   },
   methods: {
+    processJiraDescription (description) {
+      const _self = this;
+      if(_self.worklogDescriptionSplit){
+        if(description.includes(":"))
+          return description.split(':').slice(1).join(':');
+      }
+
+      return description;
+    },
     syncToJira () {
       const _self = this;
       const headers = {
@@ -160,7 +185,7 @@ export default {
           url: _self.jiraUrl + '/rest/api/latest/issue/' + log.issue + '/worklog',
           data: {
             timeSpentSeconds: log.duration,
-            comment: _self.worklogWihtoutDescription ? log.description.replace(log.issue,"") : log.description,
+            comment: _self.processJiraDescription( _self.worklogWihtoutDescription ? log.description.replace(log.issue,"") : log.description ),
             started: _self.toJiraDateTime(log.start)
           },
           headers: headers
@@ -263,6 +288,10 @@ export default {
       let startDate = moment(this.startDate).utc(true).toISOString(true).replace('+00:00', 'Z');
       let endDate = moment(this.endDate).add(1, 'days').utc(true).toISOString(true).replace('+00:00', 'Z');
 
+      if(_self.blockFetch)
+        return;
+      
+      _self.blockFetch = true;
       axios.get('https://www.toggl.com/api/v8/time_entries', {
         headers: { Authorization: 'Basic ' + btoa(_self.togglApiToken + ':api_token') },
         params: {
@@ -271,6 +300,8 @@ export default {
         }
       })
         .then(function (entries) {
+          _self.blockFetch = false;
+          _self.ignoreDate = false;
           entries.data.reverse();
           entries.data.forEach(function (log) {
             _self.getIssue(log).then(function (issueName) {
@@ -292,6 +323,8 @@ export default {
               _self.checkIfAlreadyLogged(log);
             }).catch(function (log) {
               // There is no ID for the entry but we still need to print it out to the user
+              _self.blockFetch = false;
+              _self.ignoreDate = false;
               let logObject = log;
               logObject.isSynced = false;
               logObject.issue = 'NO ID';
@@ -301,6 +334,8 @@ export default {
           });
         })
         .catch(function (error) {
+          _self.blockFetch = false;
+          _self.ignoreDate = false;
           if (typeof (error.response) !== 'undefined' && error.response.status === 403) {
             _self.errorMessage = 'Please add your Toggl API token';
           } else {
@@ -322,6 +357,26 @@ export default {
       if (totalDuration) {
         return _self.formatDuration(totalDuration);
       }
+    },
+    dayMinus(){
+      if(this.blockFetch)
+        return;
+
+      this.ignoreDate = true;
+      this.startDate = new Date(moment(this.startDate).add(-1, 'days').startOf('day'));
+      this.endDate = new Date(moment(this.startDate).endOf('day'));
+      console.log(this.startDate)
+      console.log(this.endDate);
+    },
+    dayPlus(){
+      if(this.blockFetch)
+        return;
+
+      this.ignoreDate = true;
+      this.startDate = new Date(moment(this.startDate).add(1, 'days').startOf('day'));
+      this.endDate = new Date(moment(this.startDate).endOf('day'));
+      console.log(this.startDate)
+      console.log(this.endDate);
     }
   }
 };

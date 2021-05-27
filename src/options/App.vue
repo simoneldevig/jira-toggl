@@ -24,6 +24,7 @@
           <md-checkbox v-model="jiraMerge">Merge time entries with same comment</md-checkbox>
           <md-checkbox v-model="jiraIssueInDescription">Parse Jira issue from description</md-checkbox>
           <md-checkbox v-model="worklogWihtoutDescription">Don't include Issue Title in worklog</md-checkbox>
+          <md-checkbox v-model="worklogDescriptionSplit">Take worklog description from first ":"</md-checkbox>
           <md-field>
             <label>Toggl API token</label>
             <md-input v-model="togglApiToken" />
@@ -50,9 +51,10 @@ export default {
     return {
       jiraUrl: '',
       jiraEmail: '',
-      jiraMerge: false,
+      jiraMerge: true,
       jiraIssueInDescription: true,
       worklogWihtoutDescription: true,
+      worklogDescriptionSplit: true,
       togglApiToken: '',
       isSaving: false,
       showSnackbar: false
@@ -64,16 +66,18 @@ export default {
     browser.storage.sync.get({
       jiraUrl: '',
       jiraEmail: '',
-      jiraMerge: false,
+      jiraMerge: true,
       jiraIssueInDescription: true,
       worklogWihtoutDescription: true,
+      worklogDescriptionSplit: true,
       togglApiToken: ''
     }).then((setting) => {
       _self.jiraUrl = setting.jiraUrl;
       _self.jiraEmail = setting.jiraEmail;
       _self.jiraMerge = setting.jiraMerge;
       _self.jiraIssueInDescription = setting.jiraIssueInDescription;
-      _self.worklogWihtoutDescription =  setting.worklogWihtoutDescription;
+      _self.worklogWihtoutDescription = setting.worklogWihtoutDescription;
+      _self.worklogDescriptionSplit = setting.worklogDescriptionSplit;
       _self.togglApiToken = setting.togglApiToken;
     });
   },
@@ -88,6 +92,7 @@ export default {
         jiraMerge: _self.jiraMerge,
         jiraIssueInDescription: _self.jiraIssueInDescription,
         worklogWihtoutDescription: _self.worklogWihtoutDescription,
+        worklogDescriptionSplit: _self.worklogDescriptionSplit,
         togglApiToken: _self.togglApiToken
       }).then(() => {
         _self.isSaving = false;
