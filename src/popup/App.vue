@@ -5,7 +5,7 @@
         <md-toolbar md-elevation="0">
           <div class="md-layout md-alignment-center-left">
             <img src="/icons/jira-toggl_48.png" alt="Avatar">
-            <h3 class="md-title">Toggl2Jira - Xoia</h3>
+            <h3 class="md-title">Jira Toggl</h3>
           </div>
           <div class="md-toolbar-section-end">
             <a href="../options/options.html" target="_blank">
@@ -120,9 +120,11 @@ export default {
       errorMessage: null,
       jiraUrl: '',
       jiraEmail: '',
-      jiraMerge: false,
+      jiraMerge: true,
       jiraIssueInDescription: true,
       worklogWihtoutDescription: true,
+      worklogDescriptionSplit: true,
+      stringSplit: ':',
       togglApiToken: '',
       isSaving: false,
       showSnackbar: false,
@@ -145,7 +147,7 @@ export default {
     const _self = this;
 
     browser.storage.sync.get({
-      jiraUrl: 'https://xoiasoftware.atlassian.net',
+      jiraUrl: '',
       jiraEmail: '',
       jiraMerge: true,
       jiraIssueInDescription: true,
