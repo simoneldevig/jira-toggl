@@ -5,7 +5,7 @@
         <md-toolbar md-elevation="0">
           <div class="md-layout md-alignment-center-left">
             <img src="/icons/jira-toggl_48.png" alt="Avatar">
-            <h3 class="md-title">Jira Toggl</h3>
+            <h3 class="md-title">Jira Toggl Settings</h3>
           </div>
         </md-toolbar>
       </div>
