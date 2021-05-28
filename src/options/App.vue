@@ -22,6 +22,7 @@
             <md-input v-model="jiraEmail" />
           </md-field>
           <md-checkbox v-model="jiraMerge">Merge time entries with same comment</md-checkbox>
+          <!-- <md-checkbox v-model="allowNumbersInId">Allow numbers in Project ID</md-checkbox> -->
           <md-checkbox v-model="jiraIssueInDescription">Parse Jira issue from description</md-checkbox>
           <md-checkbox v-model="worklogWihtoutDescription">Don't include Issue ID in worklog</md-checkbox>
           <md-checkbox v-model="worklogDescriptionSplit">Split worklog description from first occurrence of:</md-checkbox>
@@ -56,6 +57,7 @@ export default {
       jiraIssueInDescription: true,
       worklogWihtoutDescription: true,
       worklogDescriptionSplit: true,
+      allowNumbersInId: true,
       stringSplit: ":",
       togglApiToken: '',
       isSaving: false,
@@ -72,6 +74,7 @@ export default {
       jiraIssueInDescription: true,
       worklogWihtoutDescription: true,
       worklogDescriptionSplit: true,
+      allowNumbersInId: true,
       stringSplit: ":",
       togglApiToken: ''
     }).then((setting) => {
@@ -81,6 +84,7 @@ export default {
       _self.jiraIssueInDescription = setting.jiraIssueInDescription;
       _self.worklogWihtoutDescription = setting.worklogWihtoutDescription;
       _self.worklogDescriptionSplit = setting.worklogDescriptionSplit;
+      _self.allowNumbersInId = setting.allowNumbersInId;
       _self.stringSplit = setting.stringSplit;
       _self.togglApiToken = setting.togglApiToken;
     });
@@ -97,6 +101,7 @@ export default {
         jiraIssueInDescription: _self.jiraIssueInDescription,
         worklogWihtoutDescription: _self.worklogWihtoutDescription,
         worklogDescriptionSplit: _self.worklogDescriptionSplit,
+        allowNumbersInId: _self.allowNumbersInId,
         stringSplit: _self.stringSplit,
         togglApiToken: _self.togglApiToken
       }).then(() => {

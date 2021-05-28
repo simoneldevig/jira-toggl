@@ -74,10 +74,11 @@
 
             <md-table-row>
               <md-table-cell class="no-wrap" />
-              <md-table-cell class="no-wrap" />
+              
               <md-table-cell />
               <md-table-cell class="no-wrap"><b>TOTAL</b></md-table-cell>
-              <md-table-cell class="no-wrap">{{ totalDuration() }}</md-table-cell>
+              <md-table-cell class="no-wrap"><i>{{ totalDuration(true) }}</i></md-table-cell>
+              <md-table-cell class="no-wrap"><b>{{totalDuration()}}</b></md-table-cell>
               <md-table-cell class="no-wrap" />
             </md-table-row>
           </md-table>
@@ -124,6 +125,7 @@ export default {
       jiraIssueInDescription: true,
       worklogWihtoutDescription: true,
       worklogDescriptionSplit: true,
+      allowNumbersInId: true,
       stringSplit: ':',
       togglApiToken: '',
       isSaving: false,
@@ -153,6 +155,7 @@ export default {
       jiraIssueInDescription: true,
       worklogWihtoutDescription: true,
       worklogDescriptionSplit: true,
+      allowNumbersInId: true,
       stringSplit: ':',
       togglApiToken: ''
     }).then((setting) => {
@@ -162,6 +165,7 @@ export default {
       _self.jiraIssueInDescription = setting.jiraIssueInDescription;
       _self.worklogWihtoutDescription = setting.worklogWihtoutDescription;
       _self.worklogDescriptionSplit = setting.worklogDescriptionSplit;
+      _self.allowNumbersInId = setting.allowNumbersInId;
       _self.stringSplit = setting.stringSplit;
       _self.togglApiToken = setting.togglApiToken;
     });
@@ -275,11 +279,17 @@ export default {
           });
         });
     },
+    matchIssueId(name){
+      if(this.allowNumbersInId)
+        return name.match(/^[A-Z][A-Z,0-9]*-[0-9]*/);
+      else
+        return name.match(/^[A-Z]*-[0-9]*/);
+    },
     getIssue (log) {
       let _self = this;
       return new Promise(function (resolve, reject) {
         if (_self.jiraIssueInDescription) {
-          const parsedIssue = log.description.match(/^[A-Z]*-[0-9]*/);
+          const parsedIssue = _self.matchIssueId(log.description);
           if (parsedIssue) {
             resolve(parsedIssue[0]);
           }
@@ -290,7 +300,7 @@ export default {
             headers: { Authorization: 'Basic ' + btoa(_self.togglApiToken + ':api_token') }
           })
             .then(function (issue) {
-              const parsedIssue = issue.data.data.name.match(/^[A-Z]*-[0-9]*/);
+              const parsedIssue = _self.matchIssueId(issue.data.data.name);
               if (parsedIssue) {
                 resolve(parsedIssue[0]);
               }
@@ -358,7 +368,7 @@ export default {
           }
         });
     },
-    totalDuration () {
+    totalDuration (synced = false) {
       let _self = this;
       if (!_self.logs.length) {
         return  _self.blockFetch ? 'Loading...' : 'No entries!';
@@ -367,7 +377,8 @@ export default {
       let totalDuration = 0;
       _self.logs.forEach(function (log) {
         if (log.duration && log.duration > 0) {
-          totalDuration += log.duration;
+          if(!synced || log.isSynced)
+            totalDuration += log.duration;
         }
       });
       if (totalDuration) {
