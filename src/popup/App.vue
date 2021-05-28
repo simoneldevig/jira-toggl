@@ -283,14 +283,18 @@ export default {
           if (parsedIssue) {
             resolve(parsedIssue[0]);
           }
-          reject(log);
+          //reject(log);  If don't find in description, search in project title
         }
         if ((typeof log.pid !== 'undefined')) {
           axios.get('https://www.toggl.com/api/v8/projects/' + log.pid, {
             headers: { Authorization: 'Basic ' + btoa(_self.togglApiToken + ':api_token') }
           })
             .then(function (issue) {
-              resolve(issue.data.data.name);
+              const parsedIssue = issue.data.data.name.match(/^[A-Z]*-[0-9]*/);
+              if (parsedIssue) {
+                resolve(parsedIssue[0]);
+              }
+              reject(log);
             });
         } else {
           reject(log);
