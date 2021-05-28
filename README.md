@@ -19,6 +19,18 @@ Link to Chrome store: https://tinyurl.com/y4pj9por
 
 Link to Firefox store: https://tinyurl.com/y5as5wkc
 
+## Options
+
+### Don't include Issue ID in worklog
+Avoid to include the Issue ID present in the toggl task description, in the worklog description
+
+![](jira-toggl-option-avoidID.jpg)
+
+### Split worklog description from first occurrence of: "searched string to split"
+If the toggl task description contains "the searched string to split (':' in this example)", the worklog desctription in Jira just inlcude the text after this string (not included)
+
+![](jira-toggl-option-split.jpg)
+
 ## Contributing To This Project
 
 Anyone and everyone is welcome to contribute. Just create a PR with your changes and I will have a look at it.
@@ -46,11 +58,10 @@ It also enable [Hot Module Reloading](https://webpack.js.org/concepts/hot-module
 
 :warning: Keep in mind that HMR only works for your **background** entry.
 
-### `npm run build-zip`
+### `npm run build:zip`
 
 Build a zip file following this format `<name>-v<version>.zip`, by reading `name` and `version` from `manifest.json` file.
 Zip file is located in `dist-zip` folder.
-
 
 ## License
 

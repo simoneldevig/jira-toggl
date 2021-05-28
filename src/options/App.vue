@@ -25,7 +25,7 @@
           <md-checkbox v-model="jiraIssueInDescription">Parse Jira issue from description</md-checkbox>
           <md-checkbox v-model="worklogWihtoutDescription">Don't include Issue ID in worklog</md-checkbox>
           <md-checkbox v-model="worklogDescriptionSplit">Split worklog description from first occurrence of:</md-checkbox>
-          <input v-model="stringSplit" placeholder=":" style="contain: content;" />
+          <input v-model="stringSplit" placeholder="Searched string to split" style="contain: content;" />
           <md-field>
             <label>Toggl API token</label>
             <md-input v-model="togglApiToken" />
@@ -56,8 +56,8 @@ export default {
       jiraIssueInDescription: true,
       worklogWihtoutDescription: true,
       worklogDescriptionSplit: true,
-      togglApiToken: '',
       stringSplit: ":",
+      togglApiToken: '',
       isSaving: false,
       showSnackbar: false
     };

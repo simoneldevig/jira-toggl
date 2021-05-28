@@ -66,7 +66,7 @@
               <md-table-cell class="no-wrap"><a v-if="log.issue != 'NO ID'" v-bind:href="jiraUrl+'/browse/'+ log.issue" target="_blank">{{ log.issue }}</a><a v-else>{{ log.issue }}</a></md-table-cell>
               <md-table-cell>{{ log.description }}</md-table-cell>
               <md-table-cell class="no-wrap">{{ $moment(log.start).format("l") }}</md-table-cell>
-              <md-table-cell class="no-wrap" :class="log.duration > 60 ? 'black' : 'red'">{{ formatDuration(log.duration) }}</md-table-cell>
+              <md-table-cell class="no-wrap" :class="log.duration > 60 ? 'timeBlack' : 'timeRed'">{{ formatDuration(log.duration) }}</md-table-cell>
               <md-table-cell class="no-wrap">
                 <md-icon v-show="log.isSynced" class="md-accent">check_circle</md-icon>
               </md-table-cell>
@@ -151,6 +151,7 @@ export default {
       jiraIssueInDescription: true,
       worklogWihtoutDescription: true,
       worklogDescriptionSplit: true,
+      stringSplit: ':',
       togglApiToken: ''
     }).then((setting) => {
       _self.jiraUrl = setting.jiraUrl;
@@ -159,6 +160,7 @@ export default {
       _self.jiraIssueInDescription = setting.jiraIssueInDescription;
       _self.worklogWihtoutDescription = setting.worklogWihtoutDescription;
       _self.worklogDescriptionSplit = setting.worklogDescriptionSplit;
+      _self.stringSplit = setting.stringSplit;
       _self.togglApiToken = setting.togglApiToken;
     });
   },
@@ -170,9 +172,9 @@ export default {
     },
     processJiraDescription (description) {
       const _self = this;
-      if(_self.worklogDescriptionSplit){
-        if(description.includes(":"))
-          return description.split(':').slice(1).join(':');
+      if(_self.worklogDescriptionSplit && _self.stringSplit){
+        if(description.includes(_self.stringSplit))
+          return description.split(_self.stringSplit).slice(1).join(_self.stringSplit);
       }
 
       return description;
@@ -449,12 +451,12 @@ export default {
 
   img { width: 32px; }
 
-  .red{
+  .timeRed{
     color:red;
     font-weight: bold;
   }
 
-  .black{
+  .timeBlack{
     color:black;
   }
 </style>
