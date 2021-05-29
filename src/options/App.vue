@@ -21,6 +21,7 @@
             <label>Jira email</label>
             <md-input v-model="jiraEmail" />
           </md-field>
+          <h3>Options</h3>
           <md-checkbox v-model="jiraMerge">Merge time entries with same comment</md-checkbox>
           <!-- <md-checkbox v-model="allowNumbersInId">Allow numbers in Project ID</md-checkbox> -->
           <md-checkbox v-model="jiraIssueInDescription">Parse Jira issue from description</md-checkbox>
@@ -37,6 +38,9 @@
               <span v-show="isSaving">Saving...</span>
             </md-button>
           </div>
+          <br>
+          <h3>Extra Options</h3>
+          <md-checkbox v-model="clockworkEnabled">Button to Clockwork Free Jira Plugin</md-checkbox>
           <md-snackbar :md-active.sync="showSnackbar" md-persistent>
             <span>Your settings have now been saved ✌️</span>
           </md-snackbar>
@@ -58,6 +62,7 @@ export default {
       worklogWihtoutDescription: true,
       worklogDescriptionSplit: true,
       allowNumbersInId: true,
+      clockworkEnabled: false,
       stringSplit: ":",
       togglApiToken: '',
       isSaving: false,
@@ -75,6 +80,7 @@ export default {
       worklogWihtoutDescription: true,
       worklogDescriptionSplit: true,
       allowNumbersInId: true,
+      clockworkEnabled: false,
       stringSplit: ":",
       togglApiToken: ''
     }).then((setting) => {
@@ -85,6 +91,7 @@ export default {
       _self.worklogWihtoutDescription = setting.worklogWihtoutDescription;
       _self.worklogDescriptionSplit = setting.worklogDescriptionSplit;
       _self.allowNumbersInId = setting.allowNumbersInId;
+      _slef.clockworkEnabled = setting.clockworkEnabled;
       _self.stringSplit = setting.stringSplit;
       _self.togglApiToken = setting.togglApiToken;
     });
@@ -102,6 +109,7 @@ export default {
         worklogWihtoutDescription: _self.worklogWihtoutDescription,
         worklogDescriptionSplit: _self.worklogDescriptionSplit,
         allowNumbersInId: _self.allowNumbersInId,
+        clockworkEnabled: _self.clockworkEnabled,
         stringSplit: _self.stringSplit,
         togglApiToken: _self.togglApiToken
       }).then(() => {

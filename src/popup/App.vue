@@ -8,6 +8,11 @@
             <h3 class="md-title">Jira Toggl</h3>
           </div>
           <div class="md-toolbar-section-end">
+            <a v-if="clockworkEnabled" :href="clockworkUrl()" target="_blank">
+              <md-button class="md-icon-button">
+                <md-icon>timer</md-icon>
+              </md-button>
+            </a>
             <a href="../options/options.html" target="_blank">
               <md-button class="md-icon-button">
                 <md-icon>settings</md-icon>
@@ -126,6 +131,7 @@ export default {
       worklogWihtoutDescription: true,
       worklogDescriptionSplit: true,
       allowNumbersInId: true,
+      clockworkEnabled: false,
       stringSplit: ':',
       togglApiToken: '',
       isSaving: false,
@@ -156,6 +162,7 @@ export default {
       worklogWihtoutDescription: true,
       worklogDescriptionSplit: true,
       allowNumbersInId: true,
+      clockworkEnabled: false,
       stringSplit: ':',
       togglApiToken: ''
     }).then((setting) => {
@@ -166,6 +173,7 @@ export default {
       _self.worklogWihtoutDescription = setting.worklogWihtoutDescription;
       _self.worklogDescriptionSplit = setting.worklogDescriptionSplit;
       _self.allowNumbersInId = setting.allowNumbersInId;
+      _self.clockworkEnabled = setting.clockworkEnabled;
       _self.stringSplit = setting.stringSplit;
       _self.togglApiToken = setting.togglApiToken;
     });
@@ -405,6 +413,11 @@ export default {
       this.startDate = new Date(moment().startOf('day'));
       this.endDate = this.startDate;
       this.refreshEntries();
+    },
+    clockworkUrl(){
+      let startDate = moment(this.startDate).utc(true).toISOString(true).slice(0, 10);
+      let endDate = moment(this.endDate).utc(true).toISOString(true).slice(0, 10);
+      return this.jiraUrl + "/plugins/servlet/ac/clockwork-free-cloud/clockwork-mywork?#!reportName=My%20work&scope%5BstartingAt%5D="+ startDate + "&scope%5BendingAt%5D=" + endDate + "&selectedBreakdowns%5B%5D=projects&selectedBreakdowns%5B%5D=issues&period=PERIOD_DAY";
     }
   }
 };
