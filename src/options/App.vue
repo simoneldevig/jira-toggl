@@ -91,7 +91,7 @@ export default {
       _self.worklogWihtoutDescription = setting.worklogWihtoutDescription;
       _self.worklogDescriptionSplit = setting.worklogDescriptionSplit;
       _self.allowNumbersInId = setting.allowNumbersInId;
-      _slef.clockworkEnabled = setting.clockworkEnabled;
+      _self.clockworkEnabled = setting.clockworkEnabled;
       _self.stringSplit = setting.stringSplit;
       _self.togglApiToken = setting.togglApiToken;
     });

@@ -27,7 +27,7 @@ Avoid to include the Issue ID present in the toggl task description, in the work
 ![](jira-toggl-option-avoidID.jpg)
 
 ### Split worklog description from first occurrence of: "searched string to split"
-If the toggl task description contains "the searched string to split (':' in this example)", the worklog desctription in Jira just inlcude the text after this string (not included)
+If the toggl task description contains "the searched string to split (':' in this example)", the worklog description in Jira just inlcude the text after this string (not included)
 
 ![](jira-toggl-option-split.jpg)
 
