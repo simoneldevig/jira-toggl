@@ -25,9 +25,9 @@
           <md-checkbox v-model="jiraMerge">Merge time entries with same comment</md-checkbox>
           <!-- <md-checkbox v-model="allowNumbersInId">Allow numbers in Project ID</md-checkbox> -->
           <md-checkbox v-model="jiraIssueInDescription">Parse Jira issue from description</md-checkbox>
-          <md-checkbox v-model="worklogWihtoutDescription">Don't include Issue ID in worklog</md-checkbox>
+          <md-checkbox v-model="worklogWihtoutDescription">Don't include Issue ID in worklog</md-checkbox><br>
           <md-checkbox v-model="worklogDescriptionSplit">Split worklog description from first occurrence of:</md-checkbox>
-          <input v-model="stringSplit" placeholder="Searched string to split" style="contain: content;" />
+          <input v-model="stringSplit" placeholder="Searched string to split" style="contain: content;">
           <md-field>
             <label>Toggl API token</label>
             <md-input v-model="togglApiToken" />
@@ -40,7 +40,18 @@
           </div>
           <br>
           <h3>Extra Options</h3>
-          <md-checkbox v-model="clockworkEnabled">Button to Clockwork Free Jira Plugin</md-checkbox>
+          <md-checkbox v-model="clockworkEnabled">Button to Jira Plugin (Usually Clockwork Free)</md-checkbox>
+          <md-field>
+            <label>URL Jira Plugin</label>
+            <md-input v-model="jiraPlugin" />
+          </md-field>
+          <!-- <br><label>Start weekday:</label>
+          <b-form-select v-model="weekday" :options="weekdays"></b-form-select>
+          <select v-model="weekday">
+            <option v-for="option in weekdays" :value="option.text">
+              {{ option.text }}
+            </option>
+          </select> -->
           <md-snackbar :md-active.sync="showSnackbar" md-persistent>
             <span>Your settings have now been saved ✌️</span>
           </md-snackbar>
@@ -51,6 +62,7 @@
 </template>
 
 <script>
+
 export default {
   name: 'App',
   data () {
@@ -63,10 +75,17 @@ export default {
       worklogDescriptionSplit: true,
       allowNumbersInId: true,
       clockworkEnabled: false,
-      stringSplit: ":",
+      stringSplit: ':',
       togglApiToken: '',
       isSaving: false,
-      showSnackbar: false
+      showSnackbar: false,
+      jiraPlugin: '{jiraUrl}/plugins/servlet/ac/clockwork-free-cloud/clockwork-mywork#!reportName=Toggle2Jira&scope%5BstartingAt%5D={startDate}&scope%5BendingAt%5D={endDate}&selectedBreakdowns%5B%5D=projects&selectedBreakdowns%5B%5D=issues&period=PERIOD_DAY',
+      weekday: 0,
+      weekdays: [
+        { value: 0, text: 'Sunday' },
+        { value: 1, text: 'Monday' },
+        { value: 6, text: 'Saturday' }
+      ]
     };
   },
   created () {
@@ -81,8 +100,10 @@ export default {
       worklogDescriptionSplit: true,
       allowNumbersInId: true,
       clockworkEnabled: false,
-      stringSplit: ":",
-      togglApiToken: ''
+      stringSplit: ':',
+      togglApiToken: '',
+      jiraPlugin: '{jiraUrl}/plugins/servlet/ac/clockwork-free-cloud/clockwork-mywork#!reportName=Toggle2Jira&scope%5BstartingAt%5D={startDate}&scope%5BendingAt%5D={endDate}&selectedBreakdowns%5B%5D=projects&selectedBreakdowns%5B%5D=issues&period=PERIOD_DAY',
+      weekday: 0
     }).then((setting) => {
       _self.jiraUrl = setting.jiraUrl;
       _self.jiraEmail = setting.jiraEmail;
@@ -94,6 +115,8 @@ export default {
       _self.clockworkEnabled = setting.clockworkEnabled;
       _self.stringSplit = setting.stringSplit;
       _self.togglApiToken = setting.togglApiToken;
+      _self.jiraPlugin = setting.jiraPlugin;
+      _self.weekday = setting.weekday;
     });
   },
   methods: {
@@ -111,7 +134,9 @@ export default {
         allowNumbersInId: _self.allowNumbersInId,
         clockworkEnabled: _self.clockworkEnabled,
         stringSplit: _self.stringSplit,
-        togglApiToken: _self.togglApiToken
+        togglApiToken: _self.togglApiToken,
+        jiraPlugin: _self.jiraPlugin,
+        weekday: _self.weekday
       }).then(() => {
         _self.isSaving = false;
         _self.showSnackbar = true;
