@@ -335,6 +335,8 @@ export default {
             resolve(parsedIssue[0]);
           }
           // reject(log);  If don't find in description, search in project title
+        } else if (log.description == null) {
+          log.description = ''; // Set empty string (not null), to avoid reference null problems
         }
         if (typeof log.pid !== 'undefined') {
           axios
