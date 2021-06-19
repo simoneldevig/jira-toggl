@@ -37,7 +37,7 @@
 
         <div class="md-layout-item">
           <span class="datepicker-label md-caption">Start date</span>
-          <md-datepicker v-model="startDate" start-weekday="2" md-immediately />
+          <md-datepicker v-model="startDate" start-weekday="2" md-immediately monday-first/>
         </div>
         <div class="md-layout-item">
           <span class="datepicker-label md-caption">End date</span>
@@ -146,7 +146,8 @@ export default {
       isSaving: false,
       showSnackbar: false,
       blockFetch: false,
-      weekday: 0
+      weekday: 0,
+      saveDates: false
     };
   },
   watch: {
@@ -177,7 +178,10 @@ export default {
         stringSplit: ':',
         togglApiToken: '',
         jiraPlugin: '',
-        weekday: 0
+        weekday: 0,
+        startDate: initalStartDate,
+        endDate: initalEndDate,
+        saveDates: false
       })
       .then((setting) => {
         _self.jiraUrl = setting.jiraUrl;
@@ -192,10 +196,18 @@ export default {
         _self.togglApiToken = setting.togglApiToken;
         _self.jiraPlugin = setting.jiraPlugin;
         _self.weekday = setting.weekday;
+        _self.saveDates = setting.saveDates;
+        if(_self.saveDates){
+          _self.startDate = setting.startDate;
+          _self.endDate = setting.endDate;
+        }
       });
   },
   methods: {
     refreshEntries () {
+      if(this.saveDates){
+        this.saveActualDates();
+      }
       this.checkedLogs = [];
       this.logs = [];
       this.fetchEntries();
@@ -493,6 +505,22 @@ export default {
       return (
         this.jiraPlugin.replace('{jiraUrl}', this.jiraUrl).replace('{startDate}', startDate).replace('{endDate}', endDate)
       );
+    },
+    formatDateToPicker (date){
+      const y = new Date(date).getFullYear();
+      const m = new Date(date).getMonth()+1;
+      const d = new Date(date).getDate();
+      return y.toString() + "-" + m.toString() + "-" + d.toString();
+    },
+    saveActualDates () {
+      const _self = this;
+      _self.isSaving = true;
+      browser.storage.sync.set({
+        startDate: this.formatDateToPicker(_self.startDate),
+        endDate: this.formatDateToPicker(_self.endDate)
+      }).then(() => {
+        _self.isSaving = false;
+      });
     }
   }
 };

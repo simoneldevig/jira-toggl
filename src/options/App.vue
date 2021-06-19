@@ -40,6 +40,7 @@
           </div>
           <br>
           <h3>Extra Options</h3>
+          <md-checkbox v-model="saveDates">Save dates (Persistent start and end dates)</md-checkbox><br>
           <md-checkbox v-model="clockworkEnabled">Button to Jira Plugin (Usually Clockwork Free)</md-checkbox>
           <md-field>
             <label>URL Jira Plugin</label>
@@ -81,6 +82,7 @@ export default {
       showSnackbar: false,
       jiraPlugin: '{jiraUrl}/plugins/servlet/ac/clockwork-free-cloud/clockwork-mywork#!reportName=Toggle2Jira&scope%5BstartingAt%5D={startDate}&scope%5BendingAt%5D={endDate}&selectedBreakdowns%5B%5D=projects&selectedBreakdowns%5B%5D=issues&period=PERIOD_DAY',
       weekday: 0,
+      saveDates: false,
       weekdays: [
         { value: 0, text: 'Sunday' },
         { value: 1, text: 'Monday' },
@@ -103,7 +105,8 @@ export default {
       stringSplit: ':',
       togglApiToken: '',
       jiraPlugin: '{jiraUrl}/plugins/servlet/ac/clockwork-free-cloud/clockwork-mywork#!reportName=Toggle2Jira&scope%5BstartingAt%5D={startDate}&scope%5BendingAt%5D={endDate}&selectedBreakdowns%5B%5D=projects&selectedBreakdowns%5B%5D=issues&period=PERIOD_DAY',
-      weekday: 0
+      weekday: 0,
+      saveDates: false
     }).then((setting) => {
       _self.jiraUrl = setting.jiraUrl;
       _self.jiraEmail = setting.jiraEmail;
@@ -117,6 +120,7 @@ export default {
       _self.togglApiToken = setting.togglApiToken;
       _self.jiraPlugin = setting.jiraPlugin;
       _self.weekday = setting.weekday;
+      _self.saveDates = setting.saveDates;
     });
   },
   methods: {
@@ -136,7 +140,8 @@ export default {
         stringSplit: _self.stringSplit,
         togglApiToken: _self.togglApiToken,
         jiraPlugin: _self.jiraPlugin,
-        weekday: _self.weekday
+        weekday: _self.weekday,
+        saveDates: _self.saveDates
       }).then(() => {
         _self.isSaving = false;
         _self.showSnackbar = true;
