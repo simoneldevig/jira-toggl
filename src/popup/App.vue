@@ -37,7 +37,7 @@
 
         <div class="md-layout-item">
           <span class="datepicker-label md-caption">Start date</span>
-          <md-datepicker v-model="startDate" start-weekday="2" md-immediately monday-first/>
+          <md-datepicker v-model="startDate" :readonly="blockFetch" md-immediately />
         </div>
         <div class="md-layout-item">
           <span class="datepicker-label md-caption">End date</span>
@@ -88,10 +88,14 @@
               <md-table-cell />
               <md-table-cell class="no-wrap"><b>TOTAL</b></md-table-cell>
               <md-table-cell class="no-wrap">
-                <i>{{ totalDuration(true) }}</i>
+                <div class="tooltip"><i>{{ totalDuration(true) }}</i>
+                  <span class="tooltiptext">Time in Jira</span>
+                </div>
               </md-table-cell>
               <md-table-cell class="no-wrap">
-                <b>{{ totalDuration() }}</b>
+                <div class="tooltip"><n>{{ totalDuration() }}</n>
+                  <span class="tooltiptext">Time in Toggl</span>
+                </div>
               </md-table-cell>
               <md-table-cell class="no-wrap" />
             </md-table-row>
@@ -146,8 +150,9 @@ export default {
       isSaving: false,
       showSnackbar: false,
       blockFetch: false,
-      weekday: 0,
-      saveDates: false
+      weekdayMonday: true,
+      saveDates: false,
+      theme: ''
     };
   },
   watch: {
@@ -169,16 +174,16 @@ export default {
       .get({
         jiraUrl: '',
         jiraEmail: '',
-        jiraMerge: true,
-        jiraIssueInDescription: true,
-        worklogWihtoutDescription: true,
-        worklogDescriptionSplit: true,
+        jiraMerge: false,
+        jiraIssueInDescription: false,
+        worklogWihtoutDescription: false,
+        worklogDescriptionSplit: false,
         allowNumbersInId: true,
         clockworkEnabled: false,
         stringSplit: ':',
         togglApiToken: '',
         jiraPlugin: '',
-        weekday: 0,
+        weekdayMonday: false,
         startDate: initalStartDate,
         endDate: initalEndDate,
         saveDates: false
@@ -195,12 +200,13 @@ export default {
         _self.stringSplit = setting.stringSplit;
         _self.togglApiToken = setting.togglApiToken;
         _self.jiraPlugin = setting.jiraPlugin;
-        _self.weekday = setting.weekday;
+        _self.weekdayMonday = setting.weekdayMonday;
         _self.saveDates = setting.saveDates;
         if(_self.saveDates){
           _self.startDate = setting.startDate;
           _self.endDate = setting.endDate;
         }
+        _self.$material.locale.firstDayOfAWeek = _self.weekdayMonday;
       });
   },
   methods: {
@@ -346,7 +352,6 @@ export default {
           if (parsedIssue) {
             resolve(parsedIssue[0]);
           }
-          // reject(log);  If don't find in description, search in project title
         } else if (log.description == null) {
           log.description = ''; // Set empty string (not null), to avoid reference null problems
         }
@@ -623,5 +628,45 @@ img {
   overflow: hidden;
   right: 5px;
   margin-top: 5px;
+}
+
+/* ToolTip */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 150px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -75px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
 }
 </style>
