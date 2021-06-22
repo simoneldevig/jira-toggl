@@ -8,6 +8,14 @@
             <h3 class="md-title">Jira Toggl</h3>
           </div>
           <div class="md-toolbar-section-end">
+            <a v-if="clockworkEnabled" :href="clockworkUrl()" target="_blank">
+              <md-button class="md-icon-button">
+                <md-icon>timer</md-icon>
+              </md-button>
+            </a>
+            <md-button class="md-icon-button" @click="refreshEntries">
+              <md-icon>autorenew</md-icon>
+            </md-button>
             <a href="../options/options.html" target="_blank">
               <md-button class="md-icon-button">
                 <md-icon>settings</md-icon>
@@ -17,16 +25,27 @@
         </md-toolbar>
       </div>
     </div>
+    <div class="button-reset-float">
+      <u @click="moveToday">Reset dates</u>
+    </div>
+
     <div class="inner-container">
       <div class="md-layout md-gutter">
+        <md-button :disabled="blockFetch" class="md-icon-button material-icons button-navigation-calendar" @click="dayMinus">
+          <md-icon>navigate_before</md-icon>
+        </md-button>
+
         <div class="md-layout-item">
           <span class="datepicker-label md-caption">Start date</span>
-          <md-datepicker v-model="startDate" md-immediately />
+          <md-datepicker v-model="startDate" :readonly="blockFetch" md-immediately />
         </div>
         <div class="md-layout-item">
           <span class="datepicker-label md-caption">End date</span>
-          <md-datepicker v-model="endDate" md-immediately />
+          <md-datepicker v-model="endDate" :readonly="blockFetch" md-immediately />
         </div>
+        <md-button :disabled="blockFetch" class="md-icon-button material-icons button-navigation-calendar" @click="dayPlus">
+          <md-icon>navigate_next</md-icon>
+        </md-button>
       </div>
       <div class="md-layout">
         <div class="md-layout-item">
@@ -44,13 +63,21 @@
 
             <md-table-row v-for="log in logs" :key="log.id">
               <md-table-cell class="no-wrap">
-                <md-checkbox v-if="log.issue === 'NO ID' || log.isSynced || log.duration < 60" v-model="checkedLogs" disabled :value="log" />
+                <md-checkbox v-if=" log.issue === 'NO ID' || log.isSynced || log.duration < 60" v-model="checkedLogs" disabled :value="log" />
                 <md-checkbox v-else v-model="checkedLogs" :value="log" />
               </md-table-cell>
-              <md-table-cell class="no-wrap">{{ log.issue }}</md-table-cell>
+              <md-table-cell class="no-wrap">
+                <a v-if="log.issue != 'NO ID'" :href="jiraUrl + '/browse/' + log.issue" target="_blank">{{ log.issue }}</a><a v-else>{{ log.issue }}</a>
+              </md-table-cell>
               <md-table-cell>{{ log.description }}</md-table-cell>
-              <md-table-cell class="no-wrap">{{ $moment(log.start).format("l") }}</md-table-cell>
-              <md-table-cell class="no-wrap">{{ formatDuration(log.duration) }}</md-table-cell>
+              <md-table-cell class="no-wrap">
+                {{
+                  $moment(log.start).format("l")
+                }}
+              </md-table-cell>
+              <md-table-cell class="no-wrap" :class="log.duration > 60 ? 'timeBlack' : 'timeRed'">
+                {{ formatDuration(log.duration) }}
+              </md-table-cell>
               <md-table-cell class="no-wrap">
                 <md-icon v-show="log.isSynced" class="md-accent">check_circle</md-icon>
               </md-table-cell>
@@ -58,10 +85,18 @@
 
             <md-table-row>
               <md-table-cell class="no-wrap" />
-              <md-table-cell class="no-wrap" />
               <md-table-cell />
               <md-table-cell class="no-wrap"><b>TOTAL</b></md-table-cell>
-              <md-table-cell class="no-wrap">{{ totalDuration() }}</md-table-cell>
+              <md-table-cell class="no-wrap">
+                <div class="tooltip"><i>{{ totalDuration(true) }}</i>
+                  <span class="tooltiptext">Time in Jira</span>
+                </div>
+              </md-table-cell>
+              <md-table-cell class="no-wrap">
+                <div class="tooltip"><n>{{ totalDuration() }}</n>
+                  <span class="tooltiptext">Time in Toggl</span>
+                </div>
+              </md-table-cell>
               <md-table-cell class="no-wrap" />
             </md-table-row>
           </md-table>
@@ -105,59 +140,114 @@ export default {
       jiraUrl: '',
       jiraEmail: '',
       jiraMerge: true,
-      jiraIssueInDescription: false,
+      jiraIssueInDescription: true,
+      worklogWihtoutDescription: true,
+      worklogDescriptionSplit: true,
+      allowNumbersInId: true,
+      clockworkEnabled: false,
+      stringSplit: ':',
       togglApiToken: '',
       isSaving: false,
-      showSnackbar: false
+      showSnackbar: false,
+      blockFetch: false,
+      weekdayMonday: true,
+      saveDates: false,
+      theme: ''
     };
   },
   watch: {
     startDate: function (newVal, oldVal) {
       if (newVal.toString() !== oldVal.toString()) {
-        this.checkedLogs = [];
-        this.logs = [];
-        this.fetchEntries();
+        this.refreshEntries();
       }
     },
     endDate: function (newVal, oldVal) {
       if (newVal.toString() !== oldVal.toString()) {
-        this.checkedLogs = [];
-        this.logs = [];
-        this.fetchEntries();
+        this.refreshEntries();
       }
     }
   },
   created () {
     const _self = this;
 
-    browser.storage.sync.get({
-      jiraUrl: '',
-      jiraEmail: '',
-      jiraMerge: true,
-      jiraIssueInDescription: false,
-      togglApiToken: ''
-    }).then((setting) => {
-      _self.jiraUrl = setting.jiraUrl;
-      _self.jiraEmail = setting.jiraEmail;
-      _self.jiraMerge = setting.jiraMerge;
-      _self.jiraIssueInDescription = setting.jiraIssueInDescription;
-      _self.togglApiToken = setting.togglApiToken;
-    });
+    browser.storage.sync
+      .get({
+        jiraUrl: '',
+        jiraEmail: '',
+        jiraMerge: false,
+        jiraIssueInDescription: false,
+        worklogWihtoutDescription: false,
+        worklogDescriptionSplit: false,
+        allowNumbersInId: true,
+        clockworkEnabled: false,
+        stringSplit: ':',
+        togglApiToken: '',
+        jiraPlugin: '',
+        weekdayMonday: false,
+        startDate: initalStartDate,
+        endDate: initalEndDate,
+        saveDates: false
+      })
+      .then((setting) => {
+        _self.jiraUrl = setting.jiraUrl;
+        _self.jiraEmail = setting.jiraEmail;
+        _self.jiraMerge = setting.jiraMerge;
+        _self.jiraIssueInDescription = setting.jiraIssueInDescription;
+        _self.worklogWihtoutDescription = setting.worklogWihtoutDescription;
+        _self.worklogDescriptionSplit = setting.worklogDescriptionSplit;
+        _self.allowNumbersInId = setting.allowNumbersInId;
+        _self.clockworkEnabled = setting.clockworkEnabled;
+        _self.stringSplit = setting.stringSplit;
+        _self.togglApiToken = setting.togglApiToken;
+        _self.jiraPlugin = setting.jiraPlugin;
+        _self.weekdayMonday = setting.weekdayMonday;
+        _self.saveDates = setting.saveDates;
+        if(_self.saveDates){
+          _self.startDate = setting.startDate;
+          _self.endDate = setting.endDate;
+        }
+        _self.$material.locale.firstDayOfAWeek = _self.weekdayMonday;
+      });
   },
   methods: {
+    refreshEntries () {
+      if(this.saveDates){
+        this.saveActualDates();
+      }
+      this.checkedLogs = [];
+      this.logs = [];
+      this.fetchEntries();
+    },
+    processJiraDescription (description) {
+      const _self = this;
+      if (_self.worklogDescriptionSplit && _self.stringSplit) {
+        if (description.includes(_self.stringSplit)) {
+          return description
+            .split(_self.stringSplit)
+            .slice(1)
+            .join(_self.stringSplit);
+        }
+      }
+
+      return description;
+    },
     syncToJira () {
       const _self = this;
       const headers = {
-        'X-Atlassian-Token': 'no-check',
-        'User-Agent': ''
+        'X-Atlassian-Token': 'no-check', 'User-Agent': ''
       };
       this.checkedLogs.forEach(function (log) {
         axios({
           method: 'post',
-          url: _self.jiraUrl + '/rest/api/latest/issue/' + log.issue + '/worklog',
+          url:
+            _self.jiraUrl + '/rest/api/latest/issue/' + log.issue + '/worklog',
           data: {
             timeSpentSeconds: log.duration,
-            comment: log.description,
+            comment: _self.processJiraDescription(
+              _self.worklogWihtoutDescription
+                ? log.description.replace(log.issue, '')
+                : log.description
+            ),
             started: _self.toJiraDateTime(log.start)
           },
           headers: headers
@@ -174,7 +264,7 @@ export default {
           });
       });
     },
-    toJiraDateTime  (date) {
+    toJiraDateTime (date) {
       let parsedDate = Date.parse(date);
       let jiraDate = Date.now();
       if (parsedDate) {
@@ -200,11 +290,17 @@ export default {
     },
     formatDuration (duration) {
       duration = Number(duration);
+
+      if (duration < 0) {
+        return 'WIP';
+      }
+
       if (duration < 60) {
         return 'Too short';
       }
+
       let h = Math.floor(duration / 3600);
-      let m = Math.floor(duration % 3600 / 60);
+      let m = Math.floor((duration % 3600) / 60);
       let hDisplay = h > 0 ? h + 'h' : '';
       let mDisplay = m > 0 ? m + 'm' : '';
       return hDisplay + ' ' + mDisplay;
@@ -213,42 +309,67 @@ export default {
       const _self = this;
       if (_self.jiraMerge) {
         const format = 'DD/MM/YYYY';
-        return _self.$moment(worklog.started).format(format) === _self.$moment(log.start).format(format);
+        return (
+          _self.$moment(worklog.started).format(format) ===
+          _self.$moment(log.start).format(format)
+        );
       } else {
         return worklog.started === _self.toJiraDateTime(log.start);
       }
     },
     checkIfAlreadyLogged (log) {
       const _self = this;
-      axios.get(_self.jiraUrl + '/rest/api/latest/issue/' + log.issue + '/worklog')
+      axios
+        .get(_self.jiraUrl + '/rest/api/latest/issue/' + log.issue + '/worklog')
         .then(function (response) {
           let worklogs = response.data.worklogs;
           worklogs.forEach(function (worklog) {
-            if (_self.isSameStart(worklog, log) && worklog.author.emailAddress?.toLowerCase() === _self.jiraEmail?.toLowerCase()) {
-              let logIndex = _self.logs.findIndex(i => i.id === log.id);
-              if (typeof (_self.logs[logIndex]) !== 'undefined') {
+            if (
+              _self.isSameStart(worklog, log) &&
+              worklog.author.emailAddress?.toLowerCase() ===
+                _self.jiraEmail?.toLowerCase()
+            ) {
+              let logIndex = _self.logs.findIndex((i) => i.id === log.id);
+              if (typeof _self.logs[logIndex] !== 'undefined') {
                 _self.logs[logIndex].isSynced = true;
               }
             }
           });
         });
     },
+    matchIssueId (name) {
+      if (this.allowNumbersInId) {
+        return name.match(/^[A-Z][A-Z,0-9]*-[0-9]*/);
+      } else {
+        return name.match(/^[A-Z]*-[0-9]*/);
+      }
+    },
     getIssue (log) {
       let _self = this;
       return new Promise(function (resolve, reject) {
-        if (_self.jiraIssueInDescription) {
-          const parsedIssue = log.description.match(/^[A-Z]*-[0-9]*/);
+        if (_self.jiraIssueInDescription && log.description != null) {
+          const parsedIssue = _self.matchIssueId(log.description);
           if (parsedIssue) {
             resolve(parsedIssue[0]);
           }
-          reject(log);
+        } else if (log.description == null) {
+          log.description = ''; // Set empty string (not null), to avoid reference null problems
         }
-        if ((typeof log.pid !== 'undefined')) {
-          axios.get('https://www.toggl.com/api/v8/projects/' + log.pid, {
-            headers: { Authorization: 'Basic ' + btoa(_self.togglApiToken + ':api_token') }
-          })
+        if (typeof log.pid !== 'undefined') {
+          axios
+            .get('https://www.toggl.com/api/v8/projects/' + log.pid, {
+              headers: {
+                Authorization:
+                  'Basic ' + btoa(_self.togglApiToken + ':api_token')
+              }
+            })
             .then(function (issue) {
-              resolve(issue.data.data.name);
+              const parsedIssue = _self.matchIssueId(issue.data.data.name);
+              if (parsedIssue) {
+                resolve(parsedIssue[0]);
+              } else {
+                reject(log);
+              }
             });
         } else {
           reject(log);
@@ -257,128 +378,295 @@ export default {
     },
     fetchEntries () {
       let _self = this;
-      let startDate = moment(this.startDate).utc(true).toISOString(true).replace('+00:00', 'Z');
-      let endDate = moment(this.endDate).add(1, 'days').utc(true).toISOString(true).replace('+00:00', 'Z');
 
-      axios.get('https://www.toggl.com/api/v8/time_entries', {
-        headers: { Authorization: 'Basic ' + btoa(_self.togglApiToken + ':api_token') },
-        params: {
-          start_date: startDate,
-          end_date: endDate
-        }
-      })
+      let startDate = moment(this.startDate)
+        .utc(true)
+        .toISOString(true)
+        .replace('+00:00', 'Z');
+      let endDate = moment(this.endDate)
+        .add(1, 'days')
+        .utc(true)
+        .toISOString(true)
+        .replace('+00:00', 'Z');
+
+      if (_self.blockFetch) {
+        return;
+      }
+
+      _self.blockFetch = true;
+      axios
+        .get('https://www.toggl.com/api/v8/time_entries', {
+          headers: {
+            Authorization: 'Basic ' + btoa(_self.togglApiToken + ':api_token')
+          },
+          params: {
+            start_date: startDate,
+            end_date: endDate
+          }
+        })
         .then(function (entries) {
+          _self.blockFetch = false;
           entries.data.reverse();
           entries.data.forEach(function (log) {
-            _self.getIssue(log).then(function (issueName) {
-              let logObject = log;
-              logObject.isSynced = false;
-              logObject.issue = issueName;
-              logObject.checked = '';
+            _self
+              .getIssue(log)
+              .then(function (issueName) {
+                let logObject = log;
+                logObject.isSynced = false;
+                logObject.issue = issueName;
+                logObject.checked = '';
 
-              if (_self.jiraMerge) {
-                let logIndex = _self.logs.findIndex(i => i.description === log.description);
-                if (logIndex !== -1) {
-                  _self.logs[logIndex].duration = _self.logs[logIndex].duration + logObject.duration;
+                if (_self.jiraMerge) {
+                  let logIndex = _self.logs.findIndex(
+                    (i) => i.description === log.description
+                  );
+                  if (logIndex !== -1) {
+                    _self.logs[logIndex].duration =
+                      _self.logs[logIndex].duration + logObject.duration;
+                  } else {
+                    _self.logs.push(logObject);
+                  }
                 } else {
                   _self.logs.push(logObject);
                 }
-              } else {
+                _self.checkIfAlreadyLogged(log);
+              })
+              .catch(function (log) {
+                // There is no ID for the entry but we still need to print it out to the user
+                let logObject = log;
+                logObject.isSynced = false;
+                logObject.issue = 'NO ID';
+                logObject.checked = '';
                 _self.logs.push(logObject);
-              }
-              _self.checkIfAlreadyLogged(log);
-            }).catch(function (log) {
-              // There is no ID for the entry but we still need to print it out to the user
-              let logObject = log;
-              logObject.isSynced = false;
-              logObject.issue = 'NO ID';
-              logObject.checked = '';
-              _self.logs.push(logObject);
-            });
+              });
           });
         })
         .catch(function (error) {
-          if (typeof (error.response) !== 'undefined' && error.response.status === 403) {
+          _self.blockFetch = false;
+          if (
+            typeof error.response !== 'undefined' &&
+            error.response.status === 403
+          ) {
             _self.errorMessage = 'Please add your Toggl API token';
           } else {
-            _self.errorMessage = typeof (error.response) !== 'undefined' ? error.response.statusText : error.response;
+            _self.errorMessage =
+              typeof error.response !== 'undefined'
+                ? error.response.statusText
+                : error.response;
           }
         });
     },
-    totalDuration () {
+    totalDuration (synced = false) {
       let _self = this;
       if (!_self.logs.length) {
-        return 'Loading...';
+        return _self.blockFetch ? 'Loading...' : 'No entries!';
       }
+
       let totalDuration = 0;
       _self.logs.forEach(function (log) {
-        if (log.duration) {
-          totalDuration += log.duration;
+        if (log.duration && log.duration > 0) {
+          if (!synced || log.isSynced) {
+            totalDuration += log.duration;
+          }
         }
       });
       if (totalDuration) {
         return _self.formatDuration(totalDuration);
       }
+    },
+    dayMinus () {
+      if (this.blockFetch) {
+        return;
+      }
+      this.moveDays(-1);
+    },
+    dayPlus () {
+      if (this.blockFetch) {
+        return;
+      }
+      this.moveDays(1);
+    },
+    moveDays (ndays) {
+      let newStartDate = moment(this.startDate).add(ndays, 'days');
+      let newEndDate = moment(this.endDate).add(ndays, 'days');
+      this.startDate = new Date(newStartDate.startOf('day'));
+      this.endDate = new Date(newEndDate.startOf('day'));
+      this.refreshEntries();
+    },
+    moveToday () {
+      this.startDate = new Date(moment().startOf('day'));
+      this.endDate = this.startDate;
+      this.refreshEntries();
+    },
+    clockworkUrl () {
+      let startDate = moment(this.startDate)
+        .utc(true)
+        .toISOString(true)
+        .slice(0, 10);
+      let endDate = moment(this.endDate)
+        .utc(true)
+        .toISOString(true)
+        .slice(0, 10);
+      return (
+        this.jiraPlugin.replace('{jiraUrl}', this.jiraUrl).replace('{startDate}', startDate).replace('{endDate}', endDate)
+      );
+    },
+    formatDateToPicker (date){
+      const y = new Date(date).getFullYear();
+      const m = new Date(date).getMonth()+1;
+      const d = new Date(date).getDate();
+      return y.toString() + "-" + m.toString() + "-" + d.toString();
+    },
+    saveActualDates () {
+      const _self = this;
+      _self.isSaving = true;
+      browser.storage.sync.set({
+        startDate: this.formatDateToPicker(_self.startDate),
+        endDate: this.formatDateToPicker(_self.endDate)
+      }).then(() => {
+        _self.isSaving = false;
+      });
     }
   }
 };
 </script>
 
 <style>
-  .container {
-    position: relative;
-    background: #fff;
-    width: 700px;
-    height: 600px;
-    overflow: auto;
-  }
-  .md-layout-item { position: relative; }
+.container {
+  position: relative;
+  background: #fff;
+  width: 700px;
+  height: 600px;
+  overflow: auto;
+}
+.md-layout-item {
+  position: relative;
+}
 
-  .inner-container {
-    padding: 20px;
-    background: #fff;
-  }
+.inner-container {
+  padding: 20px;
+  background: #fff;
+}
 
-  .md-table-cell-container,
-  .md-table-head-label { padding: 0 5px; }
+.md-table-cell-container,
+.md-table-head-label {
+  padding: 0 5px;
+}
 
-  .md-checkbox { margin: 0; }
+.md-checkbox {
+  margin: 0;
+}
 
-  .datepicker-label {
-    position: absolute;
-    left: 44px;
-    font-size: 12px;
-  }
+.datepicker-label {
+  position: absolute;
+  margin-left: 35.7px;
+  font-size: 12px;
+}
 
-  .md-table-head-container {
-    padding: 4px 0;
-    height: auto;
-    text-align: left;
-  }
+.md-table-head-container {
+  padding: 4px 0;
+  height: auto;
+  text-align: left;
+}
 
-  .md-table-row:hover:not(.md-header-row) .md-table-cell { background: unset !important; }
+.md-table-row:hover:not(.md-header-row) .md-table-cell {
+  background: unset !important;
+}
 
-  .no-wrap { white-space: nowrap; }
+.no-wrap {
+  white-space: nowrap;
+}
 
-  .button__container {
-    display: flex;
-    justify-content: flex-end;
-  }
+.button__container {
+  display: flex;
+  justify-content: flex-end;
+}
 
-  .md-button { margin-left: 0; }
+.md-button {
+  margin-left: 0;
+}
 
-  .error-message {
-    text-align: center;
-    font-size: 16px;
-    position: absolute;
-      bottom: 0;
-  }
+.error-message {
+  text-align: center;
+  font-size: 16px;
+  position: absolute;
+  bottom: 0;
+}
 
-  .md-field.md-focused .md-input,
-  .md-field.md-focused .md-textarea,
-  .md-field.md-has-value .md-input,
-  .md-field.md-has-value .md-textarea { font-size: 14px; }
-  .custom-checkbox { margin-top: 4px; }
+.md-field.md-focused .md-input,
+.md-field.md-focused .md-textarea,
+.md-field.md-has-value .md-input,
+.md-field.md-has-value .md-textarea {
+  font-size: 14px;
+}
+.custom-checkbox {
+  margin-top: 4px;
+}
 
-  img { width: 32px; }
+img {
+  width: 32px;
+}
+
+.timeRed {
+  color: var(--md-theme-default-accent, rgb(255, 0, 0));
+  font-weight: bold;
+}
+
+.timeBlack {
+  color: black;
+}
+
+.button-navigation-calendar {
+  min-width: 20px;
+  margin-top: 15px;
+}
+
+.button-reset-float{
+  position: absolute;
+  float: right;
+  display: inline;
+  overflow: hidden;
+  right: 5px;
+  margin-top: 5px;
+}
+
+/* ToolTip */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 150px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -75px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
 </style>
