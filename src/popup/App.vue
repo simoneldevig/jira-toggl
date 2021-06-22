@@ -559,7 +559,7 @@ export default {
 
 .datepicker-label {
   position: absolute;
-  left: 44px;
+  margin-left: 36px;
   font-size: 12px;
 }
 
