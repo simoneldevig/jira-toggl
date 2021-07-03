@@ -19,7 +19,7 @@ Link to Chrome store: https://tinyurl.com/y4pj9por
 
 Link to Firefox store: https://tinyurl.com/y5as5wkc
 
-## Options
+## Specific options
 
 ### Don't include Issue ID in worklog
 Avoid to include the Issue ID present in the toggl task description, in the worklog description
