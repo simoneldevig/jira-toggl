@@ -231,13 +231,13 @@ export default {
 
       return description;
     },
-    syncToJira () {
+    async syncToJira () {
       const _self = this;
       const headers = {
         'X-Atlassian-Token': 'no-check', 'User-Agent': ''
       };
-      this.checkedLogs.forEach(function (log) {
-        axios({
+      for (let log of this.checkedLogs) {
+        await axios({
           method: 'post',
           url:
             _self.jiraUrl + '/rest/api/latest/issue/' + log.issue + '/worklog',
@@ -262,7 +262,7 @@ export default {
           .catch(function (error) {
             _self.errorMessage = error;
           });
-      });
+      }
     },
     toJiraDateTime (date) {
       let parsedDate = Date.parse(date);
