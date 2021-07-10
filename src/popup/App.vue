@@ -237,7 +237,7 @@ export default {
         'X-Atlassian-Token': 'no-check', 'User-Agent': ''
       };
       for (let log of this.checkedLogs) {
-        await axios({
+        const promise = axios({
           method: 'post',
           url:
             _self.jiraUrl + '/rest/api/latest/issue/' + log.issue + '/worklog',
@@ -262,6 +262,9 @@ export default {
           .catch(function (error) {
             _self.errorMessage = error;
           });
+        if (!_self.jiraMerge) {
+          await promise;
+        }
       }
     },
     toJiraDateTime (date) {
