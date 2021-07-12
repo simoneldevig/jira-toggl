@@ -88,12 +88,14 @@
               <md-table-cell />
               <md-table-cell class="no-wrap"><b>TOTAL</b></md-table-cell>
               <md-table-cell class="no-wrap">
-                <div class="tooltip"><i>{{ totalDuration(true) }}</i>
+                <div class="tooltip">
+                  <i>{{ totalDuration(true) }}</i>
                   <span class="tooltiptext">Time in Jira</span>
                 </div>
               </md-table-cell>
               <md-table-cell class="no-wrap">
-                <div class="tooltip"><n>{{ totalDuration() }}</n>
+                <div class="tooltip">
+                  <n>{{ totalDuration() }}</n>
                   <span class="tooltiptext">Time in Toggl</span>
                 </div>
               </md-table-cell>
@@ -202,7 +204,7 @@ export default {
         _self.jiraPlugin = setting.jiraPlugin;
         _self.weekdayMonday = setting.weekdayMonday;
         _self.saveDates = setting.saveDates;
-        if(_self.saveDates){
+        if (_self.saveDates) {
           _self.startDate = setting.startDate;
           _self.endDate = setting.endDate;
         }
@@ -211,7 +213,7 @@ export default {
   },
   methods: {
     refreshEntries () {
-      if(this.saveDates){
+      if (this.saveDates) {
         this.saveActualDates();
       }
       this.checkedLogs = [];
@@ -514,11 +516,11 @@ export default {
         this.jiraPlugin.replace('{jiraUrl}', this.jiraUrl).replace('{startDate}', startDate).replace('{endDate}', endDate)
       );
     },
-    formatDateToPicker (date){
+    formatDateToPicker (date) {
       const y = new Date(date).getFullYear();
-      const m = new Date(date).getMonth()+1;
+      const m = new Date(date).getMonth() + 1;
       const d = new Date(date).getDate();
-      return y.toString() + "-" + m.toString() + "-" + d.toString();
+      return y.toString() + '-' + m.toString() + '-' + d.toString();
     },
     saveActualDates () {
       const _self = this;
