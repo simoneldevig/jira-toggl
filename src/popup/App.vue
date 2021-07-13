@@ -271,7 +271,8 @@ export default {
       let parsedDate = Date.parse(date);
       let jiraDate = Date.now();
       if (parsedDate) {
-        jiraDate = new Date(parsedDate + 2 * 3600 * 1000);
+        const offset = new Date().getTimezoneOffset();
+        jiraDate = new Date(parsedDate - offset * 60 * 1000);
       }
       let dateString = jiraDate.toISOString();
       let timeZoneString;
@@ -381,16 +382,20 @@ export default {
     },
     fetchEntries () {
       let _self = this;
+      const offset = new Date().getTimezoneOffset();
+      const sign = offset <= 0 ? '+' : '-';
+      function abspad (num) { return ('0' + Math.abs(num)).slice(-2); }
+      const timezone = `${sign}${abspad(offset / 60)}:${abspad(offset % 60)}`;
 
       let startDate = moment(this.startDate)
         .utc(true)
         .toISOString(true)
-        .replace('+00:00', 'Z');
+        .replace('+00:00', timezone);
       let endDate = moment(this.endDate)
         .add(1, 'days')
         .utc(true)
         .toISOString(true)
-        .replace('+00:00', 'Z');
+        .replace('+00:00', timezone);
 
       if (_self.blockFetch) {
         return;
