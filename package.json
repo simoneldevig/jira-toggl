@@ -17,7 +17,7 @@
     "UnrealMitch <unrealmitch@gmail.com>"
   ],
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "vue": "^2.6.10",
     "webextension-polyfill": "^0.3.1",
     "moment": "^2.24.0",
