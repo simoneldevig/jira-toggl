@@ -238,7 +238,11 @@ export default {
       const headers = {
         'X-Atlassian-Token': 'no-check', 'User-Agent': ''
       };
+      const awaitingIssues = {};
       for (let log of this.checkedLogs) {
+        if (log.issue in awaitingIssues) {
+          await awaitingIssues[log.issue];
+        }
         const promise = axios({
           method: 'post',
           url:
@@ -263,10 +267,11 @@ export default {
           })
           .catch(function (error) {
             _self.errorMessage = error;
+          })
+          .finally(function () {
+            delete awaitingIssues[log.issue];
           });
-        if (!_self.jiraMerge) {
-          await promise;
-        }
+        awaitingIssues[log.issue] = promise;
       }
     },
     toJiraDateTime (date) {
