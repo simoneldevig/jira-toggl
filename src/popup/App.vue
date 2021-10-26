@@ -433,7 +433,7 @@ export default {
 
                 if (_self.jiraMerge) {
                   let logIndex = _self.logs.findIndex(
-                    (i) => i.description === log.description
+                    (i) => i.description === log.description && i.issue === issueName
                   );
                   if (logIndex !== -1) {
                     _self.logs[logIndex].duration =
