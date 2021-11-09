@@ -368,7 +368,7 @@ export default {
         }
         if (typeof log.pid !== 'undefined') {
           axios
-            .get('https://www.toggl.com/api/v8/projects/' + log.pid, {
+            .get('https://api.track.toggl.com/api/v8/projects/' + log.pid, {
               headers: {
                 Authorization:
                   'Basic ' + btoa(_self.togglApiToken + ':api_token')
@@ -410,7 +410,7 @@ export default {
 
       _self.blockFetch = true;
       axios
-        .get('https://www.toggl.com/api/v8/time_entries', {
+        .get('https://api.track.toggl.com/api/v8/time_entries', {
           headers: {
             Authorization: 'Basic ' + btoa(_self.togglApiToken + ':api_token')
           },
