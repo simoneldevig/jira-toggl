@@ -325,7 +325,7 @@ export default {
           _self.$moment(log.start).format(format)
         );
       } else {
-        return worklog.started === _self.toJiraDateTime(log.start);
+        return new Date(worklog.started).toISOString() === new Date(log.start).toISOString();
       }
     },
     checkIfAlreadyLogged (log) {
