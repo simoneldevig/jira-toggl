@@ -395,11 +395,12 @@ export default {
       const timezone = `${sign}${abspad(offset / 60)}:${abspad(offset % 60)}`;
 
       let startDate = moment(this.startDate)
+        .startOf('day')
         .utc(true)
         .toISOString(true)
         .replace('+00:00', timezone);
       let endDate = moment(this.endDate)
-        .add(1, 'days')
+        .endOf('day')
         .utc(true)
         .toISOString(true)
         .replace('+00:00', timezone);
