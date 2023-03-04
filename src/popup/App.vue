@@ -368,14 +368,14 @@ export default {
         }
         if (typeof log.pid !== 'undefined') {
           axios
-            .get('https://api.track.toggl.com/api/v8/projects/' + log.pid, {
+            .get('https://api.track.toggl.com/api/v9/workspaces/' + log.workspace_id + '/projects/' + log.pid, {
               headers: {
                 Authorization:
                   'Basic ' + btoa(_self.togglApiToken + ':api_token')
               }
             })
             .then(function (issue) {
-              const parsedIssue = _self.matchIssueId(issue.data.data.name);
+              const parsedIssue = _self.matchIssueId(issue.data.name);
               if (parsedIssue) {
                 resolve(parsedIssue[0]);
               } else {
@@ -410,7 +410,7 @@ export default {
 
       _self.blockFetch = true;
       axios
-        .get('https://api.track.toggl.com/api/v8/time_entries', {
+        .get('https://api.track.toggl.com/api/v9/me/time_entries', {
           headers: {
             Authorization: 'Basic ' + btoa(_self.togglApiToken + ':api_token')
           },
