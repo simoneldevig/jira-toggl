@@ -143,6 +143,7 @@ export default {
       jiraEmail: '',
       jiraMerge: true,
       jiraIssueInDescription: true,
+      timeRoundUp: false,
       worklogWihtoutDescription: true,
       worklogDescriptionSplit: true,
       allowNumbersInId: true,
@@ -178,6 +179,7 @@ export default {
         jiraEmail: '',
         jiraMerge: false,
         jiraIssueInDescription: false,
+        timeRoundUp: false,
         worklogWihtoutDescription: false,
         worklogDescriptionSplit: false,
         allowNumbersInId: true,
@@ -195,6 +197,7 @@ export default {
         _self.jiraEmail = setting.jiraEmail;
         _self.jiraMerge = setting.jiraMerge;
         _self.jiraIssueInDescription = setting.jiraIssueInDescription;
+        _self.timeRoundUp = setting.timeRoundUp;
         _self.worklogWihtoutDescription = setting.worklogWihtoutDescription;
         _self.worklogDescriptionSplit = setting.worklogDescriptionSplit;
         _self.allowNumbersInId = setting.allowNumbersInId;
@@ -248,7 +251,7 @@ export default {
           url:
             _self.jiraUrl + '/rest/api/latest/issue/' + log.issue + '/worklog',
           data: {
-            timeSpentSeconds: log.duration,
+            timeSpentSeconds: _self.timeRoundUp ? Math.ceil(log.duration / 60) * 60 : log.duration,
             comment: _self.processJiraDescription(
               _self.worklogWihtoutDescription
                 ? log.description.replace(log.issue, '')
@@ -300,18 +303,28 @@ export default {
       }
     },
     formatDuration (duration) {
+      let _self = this;
+
       duration = Number(duration);
 
       if (duration < 0) {
         return 'WIP';
       }
 
-      if (duration < 60) {
+      if (!_self.timeRoundUp && duration < 60) {
         return 'Too short';
       }
 
       let h = Math.floor(duration / 3600);
-      let m = Math.floor((duration % 3600) / 60);
+      if (_self.timeRoundUp) {
+        let m = Math.ceil((duration % 3600) / 60);
+        if (m === 60) {
+          h++;
+          m = 0;
+        }
+      } else {
+        let m = Math.floor((duration % 3600) / 60);
+      }
       let hDisplay = h > 0 ? h + 'h' : '';
       let mDisplay = m > 0 ? m + 'm' : '';
       return hDisplay + ' ' + mDisplay;
