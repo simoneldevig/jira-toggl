@@ -31,7 +31,6 @@
           <md-checkbox v-model="jiraMerge">Merge time entries with same comment</md-checkbox>
           <!-- <md-checkbox v-model="allowNumbersInId">Allow numbers in Project ID</md-checkbox> -->
           <md-checkbox v-model="jiraIssueInDescription">Parse Jira issue from description</md-checkbox>
-          <md-checkbox v-model="timeRoundUp">Round time up to next minute</md-checkbox>
           <md-checkbox v-model="worklogWihtoutDescription">Don't include Issue ID in worklog</md-checkbox><br>
           <md-checkbox v-model="worklogDescriptionSplit">Split worklog description from first occurrence of:</md-checkbox>
           <input v-model="stringSplit" placeholder="Searched string to split" style="contain: content;">
@@ -69,7 +68,6 @@ export default {
       jiraEmail: '',
       jiraMerge: false,
       jiraIssueInDescription: false,
-      timeRoundUp: false,
       worklogWihtoutDescription: false,
       worklogDescriptionSplit: false,
       allowNumbersInId: true,
@@ -91,7 +89,6 @@ export default {
       jiraEmail: '',
       jiraMerge: false,
       jiraIssueInDescription: false,
-      timeRoundUp: false,
       worklogWihtoutDescription: false,
       worklogDescriptionSplit: false,
       allowNumbersInId: true,
@@ -106,7 +103,6 @@ export default {
       _self.jiraEmail = setting.jiraEmail;
       _self.jiraMerge = setting.jiraMerge;
       _self.jiraIssueInDescription = setting.jiraIssueInDescription;
-      _self.timeRoundUp = setting.timeRoundUp;
       _self.worklogWihtoutDescription = setting.worklogWihtoutDescription;
       _self.worklogDescriptionSplit = setting.worklogDescriptionSplit;
       _self.allowNumbersInId = setting.allowNumbersInId;
@@ -128,7 +124,6 @@ export default {
         jiraEmail: _self.jiraEmail,
         jiraMerge: _self.jiraMerge,
         jiraIssueInDescription: _self.jiraIssueInDescription,
-        timeRoundUp: _self.timeRoundUp,
         worklogWihtoutDescription: _self.worklogWihtoutDescription,
         worklogDescriptionSplit: _self.worklogDescriptionSplit,
         allowNumbersInId: _self.allowNumbersInId,
