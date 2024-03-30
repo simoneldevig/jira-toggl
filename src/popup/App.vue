@@ -248,7 +248,7 @@ export default {
           url:
             _self.jiraUrl + '/rest/api/latest/issue/' + log.issue + '/worklog',
           data: {
-            timeSpentSeconds: log.duration,
+            timeSpentSeconds: Math.round(log.duration / 60) * 60,
             comment: _self.processJiraDescription(
               _self.worklogWihtoutDescription
                 ? log.description.replace(log.issue, '')
@@ -311,7 +311,11 @@ export default {
       }
 
       let h = Math.floor(duration / 3600);
-      let m = Math.floor((duration % 3600) / 60);
+      let m = Math.round((duration % 3600) / 60);
+      if (m === 60) {
+        h++;
+        m = 0;
+      }
       let hDisplay = h > 0 ? h + 'h' : '';
       let mDisplay = m > 0 ? m + 'm' : '';
       return hDisplay + ' ' + mDisplay;
