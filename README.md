@@ -1,5 +1,13 @@
 [![Build Status](https://travis-ci.org/simoneldevig/jira-toggl.svg?branch=master)](https://travis-ci.org/simoneldevig/jira-toggl)
 
+***
+
+:warning: **Archived** :warning:
+
+I'm archiving this repo as I'm no longer using JIRA together with Toggl. Feel free to fork it and release a new version.
+
+***
+
 <img src="src/icons/jira-toggl_128.png" alt="HeadRest" width="128"/>
 
 # Jira Toggl
