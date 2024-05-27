@@ -396,7 +396,7 @@ export default {
       const offset = new Date().getTimezoneOffset();
       const sign = offset <= 0 ? '+' : '-';
       function abspad (num) { return ('0' + Math.abs(num)).slice(-2); }
-      const timezone = `${sign}${abspad(offset / 60)}:${abspad(offset % 60)}`;
+      const timezone = `${sign}${abspad(Math.floor(offset / 60))}:${abspad(offset % 60)}`;
 
       let startDate = moment(this.startDate)
         .utc(true)
